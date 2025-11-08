@@ -1,0 +1,5 @@
+.env
+
+# AI agents
+.qwen/
+.specify/
