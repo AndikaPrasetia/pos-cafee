@@ -9,7 +9,7 @@ import (
 // User represents a user in the POS system
 type User struct {
 	ID        string           `json:"id" db:"id"`
-	Username  string           `json:"username" db:"username" validate:"required,min=3,max=50,alphanum_"`
+	Username  string           `json:"username" db:"username" validate:"required,min=3,max=50,alphanum"`
 	Email     string           `json:"email" db:"email" validate:"required,email"`
 	Password  string           `json:"-" db:"password_hash"`
 	Role      types.UserRole   `json:"role" db:"role" validate:"required,oneof=cashier manager admin"`
@@ -28,7 +28,7 @@ type UserLogin struct {
 
 // UserRegister represents registration data
 type UserRegister struct {
-	Username  string         `json:"username" validate:"required,min=3,max=50,alphanum_"`
+	Username  string         `json:"username" validate:"required,min=3,max=50,alphanum"`
 	Email     string         `json:"email" validate:"required,email"`
 	Password  string         `json:"password" validate:"required,min=8"`
 	Role      types.UserRole `json:"role" validate:"required,oneof=cashier manager admin"`
@@ -51,7 +51,7 @@ type UserProfile struct {
 
 // UserUpdate represents data to update a user
 type UserUpdate struct {
-	Username  *string        `json:"username,omitempty" validate:"omitempty,min=3,max=50,alphanum_"`
+	Username  *string        `json:"username,omitempty" validate:"omitempty,min=3,max=50,alphanum"`
 	Email     *string        `json:"email,omitempty" validate:"omitempty,email"`
 	Role      *types.UserRole `json:"role,omitempty" validate:"omitempty,oneof=cashier manager admin"`
 	FirstName *string        `json:"first_name,omitempty" validate:"omitempty,min=1,max=100"`

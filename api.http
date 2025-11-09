@@ -1,0 +1,121 @@
+### POS App
+# @name POS App
+# @version 1.0.0
+# @description POS app for a small cafe
+
+@baseUrl = http://localhost:8080
+@contentType = application/json
+@accessToken = {{login.response.body.$.data.token}}
+
+### Variables
+# These variables will be populated by successful requests
+# @accessToken will be set after successful login
+
+### Register
+POST {{baseUrl}}/api/auth/register
+Content-Type = {{contentType}}
+
+{
+  "username": "admin",
+  "email": "admin@test.com",
+  "password": "@Dm!n123",
+  "role": "admin",
+  "first_name": "admin",
+  "last_name": "mimin"
+}
+
+### Login
+POST {{baseUrl}}/api/auth/login
+Content-Type = {{contentType}}
+{
+  "username": "admin",
+  "password": "asalajadulu"
+}
+
+### Get all inventory items
+GET http://localhost:8080/inventory
+Content-Type: application/json
+
+###
+
+### Get inventory item by ID
+GET {{baseUrl}}/inventory/3ce89f36-c85b-49ba-9ccc-9f04b05539c4
+Content-Type: application/json
+
+###
+
+### Create new inventory item
+POST {{baseUrl}}/inventory
+Content-Type: application/json
+
+{
+  "name": "Meca Keyboard",
+  "description": "Mechanical keyboard",
+  "price": 99.99,
+  "quantity": 20,
+  "category": "Electronics"
+}
+
+###
+
+### Update inventory item
+PUT {{baseUrl}}/inventory/3ce89f36-c85b-49ba-9ccc-9f04b05539c4
+Content-Type: application/json
+
+{
+  "name": "Fliped Keyboard",
+  "description": "A Fliped Keyboard",
+  "price": 1300.00,
+  "quantity": 5,
+  "category": "Electronics"
+}
+
+###
+
+### Delete inventory item
+DELETE {{baseUrl}}/inventory/3ce89f36-c85b-49ba-9ccc-9f04b05539c4
+Content-Type: application/json
+
+###
+
+### Get all expense items
+GET {{baseUrl}}/expense
+Content-Type: application/json
+
+###
+
+### Get expense item by ID
+GET {{baseUrl}}/expense/99d43f99-d5df-46e2-9c40-a74826770238
+Content-Type: application/json
+
+###
+
+### Create new expense item
+POST {{baseUrl}}/expense
+Content-Type: application/json
+
+{
+  "description": "Office supplies purchase",
+  "amount": 89.99,
+  "category": "Office",
+  "date_spent": "2025-11-07T00:00:00Z"
+}
+
+###
+
+### Update expense item
+PUT {{baseUrl}}/expense/99d43f99-d5df-46e2-9c40-a74826770238
+Content-Type: application/json
+
+{
+  "description": "Updated office supplies purchase",
+  "amount": 95.50,
+  "category": "Office",
+  "date_spent": "2025-11-08T00:00:00Z"
+}
+
+###
+
+### Delete expense item
+DELETE {{baseUrl}}/expense/99d43f99-d5df-46e2-9c40-a74826770238
+Content-Type: application/json

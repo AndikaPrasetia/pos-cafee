@@ -12,12 +12,12 @@ import (
 type DecimalText decimal.Decimal
 
 // Scan implements the Scanner interface for database operations
-func (d *DecimalText) Scan(value interface{}) error {
+func (d *DecimalText) Scan(value any) error {
 	if value == nil {
 		*d = DecimalText(decimal.Zero)
 		return nil
 	}
-	
+
 	switch v := value.(type) {
 	case float64:
 		*d = DecimalText(decimal.NewFromFloat(v))
@@ -36,7 +36,7 @@ func (d *DecimalText) Scan(value interface{}) error {
 	default:
 		return fmt.Errorf("cannot scan %T into DecimalText", value)
 	}
-	
+
 	return nil
 }
 
@@ -128,9 +128,9 @@ const (
 type PaymentMethod string
 
 const (
-	PaymentMethodCash    PaymentMethod = "cash"
-	PaymentMethodCard    PaymentMethod = "card"
-	PaymentMethodQris    PaymentMethod = "qris"
+	PaymentMethodCash     PaymentMethod = "cash"
+	PaymentMethodCard     PaymentMethod = "card"
+	PaymentMethodQris     PaymentMethod = "qris"
 	PaymentMethodTransfer PaymentMethod = "transfer"
 )
 
@@ -138,8 +138,8 @@ const (
 type TransactionType string
 
 const (
-	TransactionTypeIn        TransactionType = "in"
-	TransactionTypeOut       TransactionType = "out"
+	TransactionTypeIn         TransactionType = "in"
+	TransactionTypeOut        TransactionType = "out"
 	TransactionTypeAdjustment TransactionType = "adjustment"
 )
 
@@ -161,14 +161,14 @@ type Pagination struct {
 
 // APIResponse represents a standard API response
 type APIResponse struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   string      `json:"error,omitempty"`
+	Success bool   `json:"success"`
+	Message string `json:"message,omitempty"`
+	Data    any    `json:"data,omitempty"`
+	Error   string `json:"error,omitempty"`
 }
 
 // APIResponseWithData creates an API response with data
-func APIResponseWithData(data interface{}) APIResponse {
+func APIResponseWithData(data any) APIResponse {
 	return APIResponse{
 		Success: true,
 		Data:    data,
@@ -200,3 +200,4 @@ type OrderFilter struct {
 	Limit     int        `json:"limit"`
 	Offset    int        `json:"offset"`
 }
+
