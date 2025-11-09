@@ -3,3 +3,38 @@
 # AI agents
 .qwen/
 .specify/
+specs/
+QWEN.md
+
+# Go binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go build/cache
+*.o
+*.a
+_work/
+_coverage/
+_cover/
+
+# Dependencies
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# project notes
+.markdowns/

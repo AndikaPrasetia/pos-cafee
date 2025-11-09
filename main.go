@@ -1,53 +1,163 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
 	"log"
+	"net/http"
+	"time"
 
-	"github.com/AndikaPrasetia/pos-cafee/config"
-	"github.com/joho/godotenv"
-
-	_ "github.com/lib/pq"
+	"github.com/AndikaPrasetia/pos-cafee/internal/config"
+	"github.com/AndikaPrasetia/pos-cafee/internal/handlers"
+	"github.com/AndikaPrasetia/pos-cafee/internal/middleware"
+	"github.com/AndikaPrasetia/pos-cafee/internal/repositories"
+	"github.com/AndikaPrasetia/pos-cafee/internal/services"
+	"github.com/AndikaPrasetia/pos-cafee/pkg/utils"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// Load environment variables from .env file
-	if err := godotenv.Load(); err != nil {
-		log.Printf("No .env file found or error loading: %v", err)
-		// Continue execution using environment variables from the system
+	// Initialize logger
+	utils.InitLogger()
+	
+	// Load configuration
+	cfg := config.LoadConfig()
+
+	// Set Gin mode based on environment
+	if cfg.Environment == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
 	}
-    cfg := config.LoadDBConfig()
 
-    db, err := sql.Open("postgres", cfg.GetConnectionString())
-    if err != nil {
-        log.Fatal("Failed to connect to database:", err)
-    }
-    defer db.Close()
+	// Initialize database connection
+	db := config.ConnectDB(cfg)
+	defer config.CloseDB(db)
 
-    // Test connection
-    err = db.Ping()
-    if err != nil {
-        log.Fatal("Failed to ping database:", err)
-    }
+	// Initialize repositories
+	repo := repositories.NewRepository(db)
 
-    fmt.Println("✅ Successfully connected to database!")
+	// Initialize services
+	authService := services.NewAuthService(repo.UserRepo, cfg.JWTSecret, parseDuration(cfg.JWTExpiry))
+	menuService := services.NewMenuService(repo.MenuRepo, repo.InventoryRepo)
+	orderService := services.NewOrderService(repo.OrderRepo, repo.MenuRepo, repo.InventoryRepo, repo.StockTransactionRepo)
+	inventoryService := services.NewInventoryService(repo.InventoryRepo, repo.StockTransactionRepo, repo.MenuRepo)
+	reportService := services.NewReportService(repo.OrderRepo, repo.MenuRepo, repo.InventoryRepo, repo.ExpenseRepo)
 
-    // Check users table
-    var userCount int
-    err = db.QueryRow("SELECT COUNT(*) FROM users").Scan(&userCount)
-    if err != nil {
-        log.Fatal("Failed to query users:", err)
-    }
+	// Initialize handlers
+	authHandler := handlers.NewAuthHandler(authService)
+	menuHandler := handlers.NewMenuHandler(menuService)
+	orderHandler := handlers.NewOrderHandler(orderService)
+	inventoryHandler := handlers.NewInventoryHandler(inventoryService)
+	reportHandler := handlers.NewReportHandler(reportService)
 
-    fmt.Printf("📊 Found %d users in database\n", userCount)
+	// Initialize Gin router
+	router := gin.New()
 
-    // Check menu items
-    var menuCount int
-    err = db.QueryRow("SELECT COUNT(*) FROM menu_items").Scan(&menuCount)
-    if err != nil {
-        log.Fatal("Failed to query menu items:", err)
-    }
+	// Add middlewares
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+	
+	// Add request size limit (e.g., 8MB)
+	router.MaxMultipartMemory = 8 << 20 // 8 MiB
 
-    fmt.Printf("🍽️  Found %d menu items in database\n", menuCount)
+	// Add basic health check endpoint - we'll use the maintenance handler
+	maintenanceHandler := handlers.NewMaintenanceHandler()
+	router.GET("/health", maintenanceHandler.HealthCheck)
+
+	// Public routes (no authentication required)
+	public := router.Group("/api/auth")
+	{
+		public.POST("/login", authHandler.Login)
+		public.POST("/register", authHandler.Register)
+	}
+
+	// Authentication protected routes (authentication required)
+	authProtected := router.Group("/api/auth")
+	authProtected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+	{
+		authProtected.GET("/profile", authHandler.Profile)
+		authProtected.PUT("/change-password", authHandler.ChangePassword)
+		authProtected.POST("/logout", authHandler.Logout)
+	}
+
+	// Menu management routes (require manager or admin role)
+	menu := router.Group("/api/menu")
+	menu.Use(middleware.RoleAuthMiddleware(cfg.JWTSecret, "manager"))
+	{
+		// Category endpoints
+		menu.GET("/categories", menuHandler.ListCategories)
+		menu.POST("/categories", menuHandler.CreateCategory)
+		menu.GET("/categories/:id", menuHandler.GetCategory)
+		menu.PUT("/categories/:id", menuHandler.UpdateCategory)
+		menu.DELETE("/categories/:id", menuHandler.DeleteCategory)
+
+		// Menu item endpoints
+		menu.GET("/items", menuHandler.ListMenuItems)
+		menu.POST("/items", menuHandler.CreateMenuItem)
+		menu.GET("/items/:id", menuHandler.GetMenuItem)
+		menu.PUT("/items/:id", menuHandler.UpdateMenuItem)
+		menu.DELETE("/items/:id", menuHandler.DeleteMenuItem)
+	}
+
+	// Order management routes (require cashier role or higher)
+	orders := router.Group("/api/orders")
+	orders.Use(middleware.RoleAuthMiddleware(cfg.JWTSecret, "cashier"))
+	{
+		orders.GET("/", orderHandler.ListOrders)
+		orders.POST("/", orderHandler.CreateOrder)
+		orders.GET("/:id", orderHandler.GetOrder)
+		orders.POST("/:id/items", orderHandler.AddItemToOrder)
+		orders.PUT("/:id/complete", orderHandler.CompleteOrder)
+		orders.PUT("/:id/cancel", orderHandler.CancelOrder)
+	}
+
+	// Inventory management routes (require manager or admin role)
+	inventory := router.Group("/api/inventory")
+	inventory.Use(middleware.RoleAuthMiddleware(cfg.JWTSecret, "manager"))
+	{
+		inventory.GET("/", inventoryHandler.ListInventory)
+		inventory.GET("/low-stock", inventoryHandler.GetLowStockItems)
+		inventory.POST("/adjust", inventoryHandler.UpdateInventory)
+		inventory.GET("/transactions", inventoryHandler.ListStockTransactions)
+	}
+
+	// Reporting routes (require manager or admin role)
+	reports := router.Group("/api/reports")
+	reports.Use(middleware.RoleAuthMiddleware(cfg.JWTSecret, "manager"))
+	{
+		reports.GET("/daily-sales", reportHandler.GetDailySalesReport)
+		reports.GET("/financial-summary", reportHandler.GetFinancialSummaryReport)
+		reports.GET("/sales-by-category", reportHandler.GetSalesByCategoryReport)
+		reports.GET("/top-selling-items", reportHandler.GetTopSellingItemsReport)
+	}
+
+	// Maintenance routes (admin for backups)
+	// Note: Health check already added earlier
+	maintenance := router.Group("/api/maintenance")
+	maintenance.Use(middleware.RoleAuthMiddleware(cfg.JWTSecret, "admin"))
+	{
+		maintenance.POST("/backup", maintenanceHandler.DatabaseBackup)
+	}
+
+	// Create HTTP server with timeout settings
+	srv := &http.Server{
+		Addr:         ":" + cfg.Port,
+		Handler:      router,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	// Start the server
+	log.Printf("Starting server on port %s in %s mode", cfg.Port, cfg.Environment)
+	log.Fatal(srv.ListenAndServe())
+}
+
+// parseDuration parses the duration string from config
+func parseDuration(durationStr string) time.Duration {
+	duration, err := time.ParseDuration(durationStr)
+	if err != nil {
+		// Default to 24 hours if parsing fails
+		return 24 * time.Hour
+	}
+	return duration
 }
