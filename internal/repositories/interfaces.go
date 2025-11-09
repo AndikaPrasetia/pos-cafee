@@ -84,12 +84,12 @@ func NewRepository(dbConn *sql.DB) *Repository {
 	queries := db.New(dbConn)
 
 	return &Repository{
-		UserRepo:             &userRepo{queries: queries},
-		MenuRepo:             &menuRepo{queries: queries},
-		OrderRepo:            &orderRepo{queries: queries},
-		InventoryRepo:        &inventoryRepo{queries: queries},
-		StockTransactionRepo: &stockTransactionRepo{queries: queries},
-		ExpenseRepo:          &expenseRepo{queries: queries},
+		UserRepo:             &userRepo{queries: queries},  // This is defined in user_repository.go
+		MenuRepo:             &menuRepo{queries: queries},  // This is defined in menu_repository.go
+		OrderRepo:            &orderRepo{queries: queries}, // This is defined in order_repository.go
+		InventoryRepo:        &inventoryRepo{queries: queries}, // This is defined in inventory_repository.go
+		StockTransactionRepo: &stockTransactionRepo{queries: queries}, // This is defined in stock_transaction_repository.go
+		ExpenseRepo:          &expenseRepo{queries: queries}, // This is defined in expense_repository.go
 	}
 }
 

@@ -88,14 +88,14 @@ func ValidatePasswordStrength(password string) error {
 func ValidateSafeString(input string, fieldName string) error {
 	// Check for SQL injection patterns
 	sqlPatterns := []string{
-		"(?i)union\\\\s+select",
-		"(?i)drop\\\\s+table",
-		"(?i)drop\\\\s+database",
-		"(?i)exec\\\\s*\\\\(",
-		"(?i)insert\\\\s+into",
-		"(?i)delete\\\\s+from",
-		"(?i)update\\\\s+\\\\w+\\\\s+set",
-		"'\\\\s*(or|and)\\\\s*1\\\\s*=\\\\s*1",
+		`(?i)union\s+select`,
+		`(?i)drop\s+table`,
+		`(?i)drop\s+database`,
+		`(?i)exec\s*\(`,
+		`(?i)insert\s+into`,
+		`(?i)delete\s+from`,
+		`(?i)update\s+\w+\s+set`,
+		`'\s*(or|and)\s*1\s*=\s*1`,
 	}
 
 	for _, pattern := range sqlPatterns {
@@ -107,10 +107,10 @@ func ValidateSafeString(input string, fieldName string) error {
 
 	// Check for XSS patterns
 	xssPatterns := []string{
-		"(?i)<script",
-		"(?i)javascript:",
-		"(?i)vbscript:",
-		"(?i)on\\w+\\s*=",
+		`(?i)<script`,
+		`(?i)javascript:`,
+		`(?i)vbscript:`,
+		`(?i)on\w+\s*=`,
 	}
 
 	for _, pattern := range xssPatterns {

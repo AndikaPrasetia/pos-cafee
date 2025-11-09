@@ -1,9 +1,10 @@
-package services
+package services_test
 
 import (
 	"testing"
 
 	"github.com/AndikaPrasetia/pos-cafee/internal/models"
+	"github.com/AndikaPrasetia/pos-cafee/internal/services"
 	"github.com/AndikaPrasetia/pos-cafee/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -66,7 +67,7 @@ func (m *MockUserRepo) UpdateUserStatus(userID string, isActive bool) error {
 
 func TestAuthService_Login_Success(t *testing.T) {
 	mockUserRepo := new(MockUserRepo)
-	authService := NewAuthService(mockUserRepo, "test-secret-key", 24*60*60) // 24 hours expiry
+	authService := services.NewAuthService(mockUserRepo, "test-secret-key", 24*60*60) // 24 hours expiry
 
 	testUser := &models.User{
 		ID:        "test-id",
@@ -98,7 +99,7 @@ func TestAuthService_Login_Success(t *testing.T) {
 
 func TestAuthService_Login_InvalidCredentials(t *testing.T) {
 	mockUserRepo := new(MockUserRepo)
-	authService := NewAuthService(mockUserRepo, "test-secret-key", 24*60*60)
+	authService := services.NewAuthService(mockUserRepo, "test-secret-key", 24*60*60)
 
 	loginData := &models.UserLogin{
 		Username: "nonexistent",
@@ -118,7 +119,7 @@ func TestAuthService_Login_InvalidCredentials(t *testing.T) {
 
 func TestAuthService_Register_NewUser(t *testing.T) {
 	mockUserRepo := new(MockUserRepo)
-	authService := NewAuthService(mockUserRepo, "test-secret-key", 24*60*60)
+	authService := services.NewAuthService(mockUserRepo, "test-secret-key", 24*60*60)
 
 	registerData := &models.UserRegister{
 		Username:  "newuser",

@@ -1,9 +1,11 @@
-package services
+package services_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/AndikaPrasetia/pos-cafee/internal/models"
+	"github.com/AndikaPrasetia/pos-cafee/internal/services"
 	"github.com/AndikaPrasetia/pos-cafee/pkg/types"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -13,7 +15,7 @@ import (
 func TestInventoryService_ValidateInventoryForOrder(t *testing.T) {
 	mockInventoryRepo := new(MockInventoryRepo)
 	mockMenuRepo := new(MockMenuRepo)
-	inventoryService := NewInventoryService(mockInventoryRepo, nil, mockMenuRepo)
+	inventoryService := services.NewInventoryService(mockInventoryRepo, nil, mockMenuRepo)
 
 	orderItems := []models.OrderItemCreate{
 		{
@@ -27,7 +29,7 @@ func TestInventoryService_ValidateInventoryForOrder(t *testing.T) {
 		CurrentStock:  10,
 		MinimumStock:  2,
 		Unit:          "pieces",
-		LastUpdatedAt: mock.Anything,
+		LastUpdatedAt: time.Now(),
 	}
 
 	menuItem := &models.MenuItem{
@@ -51,7 +53,7 @@ func TestInventoryService_ValidateInventoryForOrder(t *testing.T) {
 func TestInventoryService_ValidateInventoryForOrder_InsufficientStock(t *testing.T) {
 	mockInventoryRepo := new(MockInventoryRepo)
 	mockMenuRepo := new(MockMenuRepo)
-	inventoryService := NewInventoryService(mockInventoryRepo, nil, mockMenuRepo)
+	inventoryService := services.NewInventoryService(mockInventoryRepo, nil, mockMenuRepo)
 
 	orderItems := []models.OrderItemCreate{
 		{
@@ -65,7 +67,7 @@ func TestInventoryService_ValidateInventoryForOrder_InsufficientStock(t *testing
 		CurrentStock:  10,
 		MinimumStock:  2,
 		Unit:          "pieces",
-		LastUpdatedAt: mock.Anything,
+		LastUpdatedAt: time.Now(),
 	}
 
 	menuItem := &models.MenuItem{
@@ -204,3 +206,4 @@ func (m *MockMenuRepo) DeleteMenuItem(id string) error {
 	args := m.Called(id)
 	return args.Error(0)
 }
+
