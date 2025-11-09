@@ -15,7 +15,7 @@ tmp_dir = "bin"
 # pre_cmd = ["echo 'hello air'"]
 # Just plain old shell command. You could use `make` as well.
 # cmd = "go build -o ./tmp/main ." // SALAH
-cmd = "go build -o ./bin/main ."
+cmd = "go build -o ./bin/main ./cmd/server/"
 # Array of commands to run after ^C
 # post_cmd = ["echo 'hello air'"]
 # Binary file yields from `cmd`.
