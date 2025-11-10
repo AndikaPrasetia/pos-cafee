@@ -18,9 +18,12 @@ type AuthHandler struct {
 
 // NewAuthHandler creates a new authentication handler
 func NewAuthHandler(authService *services.AuthService) *AuthHandler {
+	validate := validator.New()
+	types.RegisterValidatorRegistrations(validate)
+	
 	return &AuthHandler{
 		authService: authService,
-		validate:    validator.New(),
+		validate:    validate,
 	}
 }
 

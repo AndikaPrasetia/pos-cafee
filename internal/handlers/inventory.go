@@ -19,9 +19,12 @@ type InventoryHandler struct {
 
 // NewInventoryHandler creates a new inventory handler
 func NewInventoryHandler(inventoryService *services.InventoryService) *InventoryHandler {
+	validate := validator.New()
+	types.RegisterValidatorRegistrations(validate)
+	
 	return &InventoryHandler{
 		inventoryService: inventoryService,
-		validate:         validator.New(),
+		validate:         validate,
 	}
 }
 

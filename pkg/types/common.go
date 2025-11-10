@@ -3,8 +3,10 @@ package types
 import (
 	"database/sql/driver"
 	"fmt"
+	"reflect"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/shopspring/decimal"
 )
 
@@ -103,6 +105,32 @@ func (d DecimalText) Equals(other DecimalText) bool {
 // FromDecimal creates a DecimalText from a decimal.Decimal
 func FromDecimal(dec decimal.Decimal) DecimalText {
 	return DecimalText(dec)
+}
+
+// RegisterValidatorRegistrations registers custom validation functions for this package
+func RegisterValidatorRegistrations(validate *validator.Validate) {
+	// Register a custom validation for DecimalText type
+	validate.RegisterCustomTypeFunc(validateDecimalText, DecimalText{})
+	// Also register validation for *DecimalText (pointers)
+	validate.RegisterCustomTypeFunc(validateDecimalTextPtr, (*DecimalText)(nil))
+}
+
+// validateDecimalText provides validation for DecimalText types
+func validateDecimalText(field reflect.Value) interface{} {
+	if f, ok := field.Interface().(DecimalText); ok {
+		// Return the string representation for validation
+		return decimal.Decimal(f).String()
+	}
+	return nil
+}
+
+// validateDecimalTextPtr provides validation for *DecimalText types (pointers)
+func validateDecimalTextPtr(field reflect.Value) interface{} {
+	if f, ok := field.Interface().(*DecimalText); ok && f != nil {
+		// Return the string representation for validation
+		return decimal.Decimal(*f).String()
+	}
+	return nil
 }
 
 // OrderStatus represents the status of an order

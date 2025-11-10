@@ -20,9 +20,12 @@ type OrderHandler struct {
 
 // NewOrderHandler creates a new order handler
 func NewOrderHandler(orderService *services.OrderService) *OrderHandler {
+	validate := validator.New()
+	types.RegisterValidatorRegistrations(validate)
+	
 	return &OrderHandler{
 		orderService: orderService,
-		validate:    validator.New(),
+		validate:    validate,
 	}
 }
 

@@ -19,9 +19,12 @@ type MenuHandler struct {
 
 // NewMenuHandler creates a new menu handler
 func NewMenuHandler(menuService *services.MenuService) *MenuHandler {
+	validate := validator.New()
+	types.RegisterValidatorRegistrations(validate)
+	
 	return &MenuHandler{
 		menuService: menuService,
-		validate:    validator.New(),
+		validate:    validate,
 	}
 }
 
