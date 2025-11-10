@@ -8,7 +8,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -117,21 +116,21 @@ const listOrders = `-- name: ListOrders :many
 SELECT id, order_number, user_id, status, total_amount, discount_amount, tax_amount, 
        payment_method, payment_status, completed_at, created_at, updated_at
 FROM orders
-WHERE ($1::text IS NULL OR status = $1) 
-  AND ($2::uuid IS NULL OR user_id = $2)
-  AND ($3::date IS NULL OR created_at >= $3) 
-  AND ($4::date IS NULL OR created_at <= $4)
+WHERE ($1 = '' OR status = $1) 
+  AND ($2 = '00000000-0000-0000-0000-000000000000'::uuid OR user_id = $2)
+  AND ($3 = '0001-01-01'::date OR created_at >= $3) 
+  AND ($4 = '0001-01-01'::date OR created_at <= $4)
 ORDER BY created_at DESC
 LIMIT $5 OFFSET $6
 `
 
 type ListOrdersParams struct {
-	Column1 string    `db:"column_1" json:"column_1"`
-	Column2 uuid.UUID `db:"column_2" json:"column_2"`
-	Column3 time.Time `db:"column_3" json:"column_3"`
-	Column4 time.Time `db:"column_4" json:"column_4"`
-	Limit   int32     `db:"limit" json:"limit"`
-	Offset  int32     `db:"offset" json:"offset"`
+	Column1 interface{} `db:"column_1" json:"column_1"`
+	Column2 interface{} `db:"column_2" json:"column_2"`
+	Column3 interface{} `db:"column_3" json:"column_3"`
+	Column4 interface{} `db:"column_4" json:"column_4"`
+	Limit   int32       `db:"limit" json:"limit"`
+	Offset  int32       `db:"offset" json:"offset"`
 }
 
 func (q *Queries) ListOrders(ctx context.Context, arg ListOrdersParams) ([]Order, error) {

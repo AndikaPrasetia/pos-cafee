@@ -16,10 +16,10 @@ LIMIT 1;
 SELECT id, order_number, user_id, status, total_amount, discount_amount, tax_amount, 
        payment_method, payment_status, completed_at, created_at, updated_at
 FROM orders
-WHERE ($1::text IS NULL OR status = $1) 
-  AND ($2::uuid IS NULL OR user_id = $2)
-  AND ($3::date IS NULL OR created_at >= $3) 
-  AND ($4::date IS NULL OR created_at <= $4)
+WHERE ($1 = '' OR status = $1) 
+  AND ($2 = '00000000-0000-0000-0000-000000000000'::uuid OR user_id = $2)
+  AND ($3 = '0001-01-01'::date OR created_at >= $3) 
+  AND ($4 = '0001-01-01'::date OR created_at <= $4)
 ORDER BY created_at DESC
 LIMIT $5 OFFSET $6;
 

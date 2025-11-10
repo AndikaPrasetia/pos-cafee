@@ -1,0 +1,50 @@
+2025/11/10 20:16:46 Successfully connected to database
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /health                   --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MaintenanceHandler).HealthCheck-fm (3 handlers)
+[GIN-debug] POST   /api/auth/login           --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*AuthHandler).Login-fm (3 handlers)
+[GIN-debug] POST   /api/auth/register        --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*AuthHandler).Register-fm (3 handlers)
+[GIN-debug] GET    /api/auth/profile         --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*AuthHandler).Profile-fm (4 handlers)
+[GIN-debug] PUT    /api/auth/change-password --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*AuthHandler).ChangePassword-fm (4 handlers)
+[GIN-debug] POST   /api/auth/logout          --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*AuthHandler).Logout-fm (4 handlers)
+[GIN-debug] GET    /api/menu/categories      --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MenuHandler).ListCategories-fm (4 handlers)
+[GIN-debug] POST   /api/menu/categories      --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MenuHandler).CreateCategory-fm (4 handlers)
+[GIN-debug] GET    /api/menu/categories/:id  --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MenuHandler).GetCategory-fm (4 handlers)
+[GIN-debug] PUT    /api/menu/categories/:id  --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MenuHandler).UpdateCategory-fm (4 handlers)
+[GIN-debug] DELETE /api/menu/categories/:id  --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MenuHandler).DeleteCategory-fm (4 handlers)
+[GIN-debug] GET    /api/menu/items           --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MenuHandler).ListMenuItems-fm (4 handlers)
+[GIN-debug] POST   /api/menu/items           --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MenuHandler).CreateMenuItem-fm (4 handlers)
+[GIN-debug] GET    /api/menu/items/:id       --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MenuHandler).GetMenuItem-fm (4 handlers)
+[GIN-debug] PUT    /api/menu/items/:id       --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MenuHandler).UpdateMenuItem-fm (4 handlers)
+[GIN-debug] DELETE /api/menu/items/:id       --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MenuHandler).DeleteMenuItem-fm (4 handlers)
+[GIN-debug] GET    /api/orders/              --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*OrderHandler).ListOrders-fm (4 handlers)
+[GIN-debug] POST   /api/orders/              --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*OrderHandler).CreateOrder-fm (4 handlers)
+[GIN-debug] GET    /api/orders/:id           --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*OrderHandler).GetOrder-fm (4 handlers)
+[GIN-debug] POST   /api/orders/:id/items     --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*OrderHandler).AddItemToOrder-fm (4 handlers)
+[GIN-debug] PUT    /api/orders/:id/complete  --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*OrderHandler).CompleteOrder-fm (4 handlers)
+[GIN-debug] PUT    /api/orders/:id/cancel    --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*OrderHandler).CancelOrder-fm (4 handlers)
+[GIN-debug] GET    /api/inventory/           --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*InventoryHandler).ListInventory-fm (4 handlers)
+[GIN-debug] GET    /api/inventory/low-stock  --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*InventoryHandler).GetLowStockItems-fm (4 handlers)
+[GIN-debug] POST   /api/inventory/adjust     --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*InventoryHandler).UpdateInventory-fm (4 handlers)
+[GIN-debug] GET    /api/inventory/transactions --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*InventoryHandler).ListStockTransactions-fm (4 handlers)
+[GIN-debug] GET    /api/reports/daily-sales  --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*ReportHandler).GetDailySalesReport-fm (4 handlers)
+[GIN-debug] GET    /api/reports/financial-summary --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*ReportHandler).GetFinancialSummaryReport-fm (4 handlers)
+[GIN-debug] GET    /api/reports/sales-by-category --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*ReportHandler).GetSalesByCategoryReport-fm (4 handlers)
+[GIN-debug] GET    /api/reports/top-selling-items --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*ReportHandler).GetTopSellingItemsReport-fm (4 handlers)
+[GIN-debug] GET    /api/expenses/            --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*ExpenseHandler).ListExpenses-fm (4 handlers)
+[GIN-debug] GET    /api/expenses/summary     --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*ExpenseHandler).GetExpenseSummary-fm (4 handlers)
+[GIN-debug] POST   /api/expenses/            --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*ExpenseHandler).CreateExpense-fm (4 handlers)
+[GIN-debug] GET    /api/expenses/:id         --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*ExpenseHandler).GetExpense-fm (4 handlers)
+[GIN-debug] PUT    /api/expenses/:id         --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*ExpenseHandler).UpdateExpense-fm (4 handlers)
+[GIN-debug] DELETE /api/expenses/:id         --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*ExpenseHandler).DeleteExpense-fm (4 handlers)
+[GIN-debug] POST   /api/maintenance/backup   --> github.com/AndikaPrasetia/pos-cafee/internal/handlers.(*MaintenanceHandler).DatabaseBackup-fm (4 handlers)
+2025/11/10 20:16:46 Starting server on port 8080 in development mode
+[GIN] 2025/11/10 - 20:17:26 | 500 |   91.992269ms |             ::1 | GET      "/api/orders/"
+[GIN] 2025/11/10 - 20:17:54 | 500 |   23.403971ms |             ::1 | GET      "/api/orders/"
+[GIN] 2025/11/10 - 20:17:58 | 200 |  136.377793ms |             ::1 | GET      "/api/orders/61c38936-6627-4458-8868-def3a348a9c2"
+[GIN] 2025/11/10 - 20:18:01 | 500 |   23.137504ms |             ::1 | GET      "/api/orders/"
+[GIN-debug] redirecting request 301: /api/orders/ --> /api/orders/
+[GIN] 2025/11/10 - 20:18:08 | 500 |   33.022572ms |             ::1 | GET      "/api/orders/"
+signal: killed

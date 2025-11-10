@@ -125,20 +125,14 @@ func (r *orderRepo) GetOrderByNumber(orderNumber string) (*models.Order, error) 
 
 // ListOrders retrieves a list of orders based on filter
 func (r *orderRepo) ListOrders(filter types.OrderFilter) ([]*models.Order, error) {
-	var statusParam sql.NullString
+	var statusParam string
 	var userID uuid.UUID
 	var startDate, endDate time.Time
 
 	if filter.Status != nil {
-		statusParam = sql.NullString{
-			String: *filter.Status,
-			Valid:  true,
-		}
+		statusParam = *filter.Status
 	} else {
-		statusParam = sql.NullString{
-			String: "",
-			Valid:  false,
-		}
+		statusParam = ""  // This will be handled by the SQL query's NULL check
 	}
 
 	if filter.UserID != nil {
@@ -148,23 +142,23 @@ func (r *orderRepo) ListOrders(filter types.OrderFilter) ([]*models.Order, error
 		}
 		userID = parsedUUID
 	} else {
-		userID = uuid.Nil
+		userID = uuid.UUID{}  // Empty UUID will be handled by SQL query's NULL check
 	}
 
 	if filter.StartDate != nil {
 		startDate = *filter.StartDate
 	} else {
-		startDate = time.Time{}
+		startDate = time.Time{} // Empty time will be handled by SQL query
 	}
 
 	if filter.EndDate != nil {
 		endDate = *filter.EndDate
 	} else {
-		endDate = time.Time{}
+		endDate = time.Time{} // Empty time will be handled by SQL query
 	}
 
 	dbOrders, err := r.queries.ListOrders(context.Background(), db.ListOrdersParams{
-		Column1: statusParam.String,
+		Column1: statusParam,
 		Column2: userID,
 		Column3: startDate,
 		Column4: endDate,
