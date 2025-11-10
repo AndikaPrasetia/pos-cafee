@@ -12,29 +12,43 @@ import (
 
 type Querier interface {
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
+	CreateExpense(ctx context.Context, arg CreateExpenseParams) (Expense, error)
 	CreateInventoryRecord(ctx context.Context, menuItemID uuid.UUID) error
 	CreateMenuItem(ctx context.Context, arg CreateMenuItemParams) (MenuItem, error)
 	CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error)
+	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
+	CreateStockTransaction(ctx context.Context, arg CreateStockTransactionParams) (StockTransaction, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	DeleteCategory(ctx context.Context, id uuid.UUID) error
+	DeleteExpense(ctx context.Context, id uuid.UUID) error
 	DeleteMenuItem(ctx context.Context, id uuid.UUID) error
+	DeleteOrderItem(ctx context.Context, id uuid.UUID) error
+	DeleteOrderItemsByOrderID(ctx context.Context, orderID uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	GetCategory(ctx context.Context, id uuid.UUID) (Category, error)
+	GetExpense(ctx context.Context, id uuid.UUID) (Expense, error)
 	GetInventoryByMenuItem(ctx context.Context, menuItemID uuid.UUID) (Inventory, error)
 	GetMenuItem(ctx context.Context, id uuid.UUID) (MenuItem, error)
 	GetOrder(ctx context.Context, id uuid.UUID) (Order, error)
 	GetOrderByNumber(ctx context.Context, orderNumber string) (Order, error)
+	GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, error)
+	GetOrderItemsByOrderID(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
+	GetOrderItemsWithDetails(ctx context.Context, orderID uuid.UUID) ([]GetOrderItemsWithDetailsRow, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListCategories(ctx context.Context, arg ListCategoriesParams) ([]Category, error)
+	ListExpenses(ctx context.Context, arg ListExpensesParams) ([]Expense, error)
 	ListInventory(ctx context.Context, arg ListInventoryParams) ([]ListInventoryRow, error)
 	ListMenuItems(ctx context.Context, arg ListMenuItemsParams) ([]MenuItem, error)
 	ListMenuItemsByCategory(ctx context.Context, arg ListMenuItemsByCategoryParams) ([]MenuItem, error)
 	ListOrders(ctx context.Context, arg ListOrdersParams) ([]Order, error)
+	ListStockTransactions(ctx context.Context, arg ListStockTransactionsParams) ([]ListStockTransactionsRow, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
+	UpdateExpense(ctx context.Context, arg UpdateExpenseParams) (Expense, error)
 	UpdateInventoryStock(ctx context.Context, arg UpdateInventoryStockParams) error
 	UpdateMenuItem(ctx context.Context, arg UpdateMenuItemParams) (MenuItem, error)
+	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (OrderItem, error)
 	UpdateOrderPayment(ctx context.Context, arg UpdateOrderPaymentParams) error
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error
 	UpdateOrderTotal(ctx context.Context, arg UpdateOrderTotalParams) error

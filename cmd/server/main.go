@@ -38,8 +38,9 @@ func main() {
 	// Initialize services
 	authService := services.NewAuthService(repo.UserRepo, cfg.JWTSecret, parseDuration(cfg.JWTExpiry))
 	menuService := services.NewMenuService(repo.MenuRepo, repo.InventoryRepo)
-	orderService := services.NewOrderService(repo.OrderRepo, repo.MenuRepo, repo.InventoryRepo, repo.StockTransactionRepo)
+	orderService := services.NewOrderService(repo.OrderRepo, repo.OrderItemRepo, repo.MenuRepo, repo.InventoryRepo, repo.StockTransactionRepo)
 	inventoryService := services.NewInventoryService(repo.InventoryRepo, repo.StockTransactionRepo, repo.MenuRepo)
+	expenseService := services.NewExpenseService(repo.ExpenseRepo)
 	reportService := services.NewReportService(repo.OrderRepo, repo.MenuRepo, repo.InventoryRepo, repo.ExpenseRepo)
 
 	// Initialize handlers
@@ -47,6 +48,7 @@ func main() {
 	menuHandler := handlers.NewMenuHandler(menuService)
 	orderHandler := handlers.NewOrderHandler(orderService)
 	inventoryHandler := handlers.NewInventoryHandler(inventoryService)
+	expenseHandler := handlers.NewExpenseHandler(expenseService)
 	reportHandler := handlers.NewReportHandler(reportService)
 
 	// Initialize Gin router
@@ -128,6 +130,18 @@ func main() {
 		reports.GET("/financial-summary", reportHandler.GetFinancialSummaryReport)
 		reports.GET("/sales-by-category", reportHandler.GetSalesByCategoryReport)
 		reports.GET("/top-selling-items", reportHandler.GetTopSellingItemsReport)
+	}
+
+	// Expense management routes (require manager or admin role)
+	expenses := router.Group("/api/expenses")
+	expenses.Use(middleware.RoleAuthMiddleware(cfg.JWTSecret, "manager"))
+	{
+		expenses.GET("/", expenseHandler.ListExpenses)
+		expenses.GET("/summary", expenseHandler.GetExpenseSummary)
+		expenses.POST("/", expenseHandler.CreateExpense)
+		expenses.GET("/:id", expenseHandler.GetExpense)
+		expenses.PUT("/:id", expenseHandler.UpdateExpense)
+		expenses.DELETE("/:id", expenseHandler.DeleteExpense)
 	}
 
 	// Maintenance routes (admin for backups)

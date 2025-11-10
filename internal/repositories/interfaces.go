@@ -64,16 +64,29 @@ type StockTransactionRepo interface {
 
 // ExpenseRepo defines the interface for expense-related database operations
 type ExpenseRepo interface {
-	// Expense operations will be implemented here
+	CreateExpense(expense *models.Expense) (*models.Expense, error)
+	GetExpense(id string) (*models.Expense, error)
+	ListExpenses(filter models.ExpenseFilter) ([]*models.Expense, error)
+	UpdateExpense(expense *models.Expense) (*models.Expense, error)
+	DeleteExpense(id string) error
 }
 
-
+// OrderItemRepo defines the interface for order item-related database operations
+type OrderItemRepo interface {
+	GetOrderItem(id string) (*models.OrderItem, error)
+	GetOrderItemsByOrderID(orderID string) ([]*models.OrderItem, error)
+	CreateOrderItem(orderItem *models.OrderItem) (*models.OrderItem, error)
+	UpdateOrderItem(orderItem *models.OrderItem) (*models.OrderItem, error)
+	DeleteOrderItem(id string) error
+	GetOrderItemsWithDetails(orderID string) ([]*models.OrderItemWithDetails, error)
+}
 
 // Repository holds all repository interfaces
 type Repository struct {
 	UserRepo             UserRepo
 	MenuRepo             MenuRepo
 	OrderRepo            OrderRepo
+	OrderItemRepo        OrderItemRepo
 	InventoryRepo        InventoryRepo
 	StockTransactionRepo StockTransactionRepo
 	ExpenseRepo          ExpenseRepo
@@ -87,6 +100,7 @@ func NewRepository(dbConn *sql.DB) *Repository {
 		UserRepo:             &userRepo{queries: queries},  // This is defined in user_repository.go
 		MenuRepo:             &menuRepo{queries: queries},  // This is defined in menu_repository.go
 		OrderRepo:            &orderRepo{queries: queries}, // This is defined in order_repository.go
+		OrderItemRepo:        &orderItemRepo{queries: queries}, // This is defined in order_item_repository.go
 		InventoryRepo:        &inventoryRepo{queries: queries}, // This is defined in inventory_repository.go
 		StockTransactionRepo: &stockTransactionRepo{queries: queries}, // This is defined in stock_transaction_repository.go
 		ExpenseRepo:          &expenseRepo{queries: queries}, // This is defined in expense_repository.go

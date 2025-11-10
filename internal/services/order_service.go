@@ -15,6 +15,7 @@ import (
 // OrderService handles order-related business logic
 type OrderService struct {
 	orderRepo           repositories.OrderRepo
+	orderItemRepo       repositories.OrderItemRepo
 	menuRepo            repositories.MenuRepo
 	inventoryRepo       repositories.InventoryRepo
 	stockTransactionRepo repositories.StockTransactionRepo
@@ -23,14 +24,16 @@ type OrderService struct {
 // NewOrderService creates a new order service
 func NewOrderService(
 	orderRepo repositories.OrderRepo,
+	orderItemRepo repositories.OrderItemRepo,
 	menuRepo repositories.MenuRepo,
 	inventoryRepo repositories.InventoryRepo,
 	stockTransactionRepo repositories.StockTransactionRepo,
 ) *OrderService {
 	return &OrderService{
-		orderRepo:           orderRepo,
-		menuRepo:            menuRepo,
-		inventoryRepo:       inventoryRepo,
+		orderRepo:            orderRepo,
+		orderItemRepo:        orderItemRepo,
+		menuRepo:             menuRepo,
+		inventoryRepo:        inventoryRepo,
 		stockTransactionRepo: stockTransactionRepo,
 	}
 }
@@ -111,8 +114,29 @@ func (s *OrderService) CreateOrder(userID string, orderData *models.OrderCreate)
 		return nil, fmt.Errorf("failed to create order: %v", err)
 	}
 
-	// Create order items (this would require additional repository functions in a complete implementation)
-	// For now, return the order with basic information
+	// Create order items
+	for _, itemWithDetails := range itemsWithDetails {
+		orderItem := &models.OrderItem{
+			ID:         uuid.New().String(),
+			OrderID:    createdOrder.ID,
+			MenuItemID: itemWithDetails.MenuItemID,
+			Quantity:   itemWithDetails.Quantity,
+			UnitPrice:  itemWithDetails.UnitPrice,
+			TotalPrice: itemWithDetails.TotalPrice,
+		}
+		
+		_, err := s.orderItemRepo.CreateOrderItem(orderItem)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create order item: %v", err)
+		}
+	}
+
+	// Retrieve order items with details
+	orderItemDetails, err := s.orderItemRepo.GetOrderItemsWithDetails(createdOrder.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get order items with details: %v", err)
+	}
+
 	createdOrderWithDetails := models.OrderWithDetails{
 		ID:             createdOrder.ID,
 		OrderNumber:    createdOrder.OrderNumber,
@@ -126,13 +150,26 @@ func (s *OrderService) CreateOrder(userID string, orderData *models.OrderCreate)
 		CompletedAt:    createdOrder.CompletedAt,
 		CreatedAt:      createdOrder.CreatedAt,
 		UpdatedAt:      createdOrder.UpdatedAt,
-		Items:          itemsWithDetails, // In a complete implementation, these would be saved to DB
+		Items:          convertOrderItemWithDetailsPtrToSlice(orderItemDetails),
 	}
 
 	return &types.APIResponse{
 		Success: true,
 		Data:    createdOrderWithDetails,
 	}, nil
+}
+
+// Helper function to convert []*models.OrderItemWithDetails to []models.OrderItemWithDetails
+func convertOrderItemWithDetailsPtrToSlice(ptrSlice []*models.OrderItemWithDetails) []models.OrderItemWithDetails {
+	if ptrSlice == nil {
+		return nil
+	}
+	
+	slice := make([]models.OrderItemWithDetails, len(ptrSlice))
+	for i, item := range ptrSlice {
+		slice[i] = *item
+	}
+	return slice
 }
 
 // GetOrder retrieves an order by ID
@@ -142,7 +179,12 @@ func (s *OrderService) GetOrder(id string) (*types.APIResponse, error) {
 		return nil, err
 	}
 
-	// In a complete implementation, this would also fetch the order items
+	// Fetch order items with details
+	orderItemDetails, err := s.orderItemRepo.GetOrderItemsWithDetails(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get order items with details: %v", err)
+	}
+
 	orderWithDetails := models.OrderWithDetails{
 		ID:             order.ID,
 		OrderNumber:    order.OrderNumber,
@@ -156,7 +198,7 @@ func (s *OrderService) GetOrder(id string) (*types.APIResponse, error) {
 		CompletedAt:    order.CompletedAt,
 		CreatedAt:      order.CreatedAt,
 		UpdatedAt:      order.UpdatedAt,
-		Items:          []models.OrderItemWithDetails{}, // Incomplete: would fetch from DB in a full implementation
+		Items:          convertOrderItemWithDetailsPtrToSlice(orderItemDetails),
 	}
 
 	return &types.APIResponse{
@@ -226,18 +268,34 @@ func (s *OrderService) AddItemToOrder(orderID string, userID string, itemData *m
 		return nil, fmt.Errorf("menu item is not available: %s", menuItem.Name)
 	}
 
-	// Calculate the new total
+	// Calculate the item total
 	itemTotal := menuItem.Price.Mul(types.FromDecimal(decimal.NewFromInt(int64(itemData.Quantity))))
+
+	// Create order item
+	orderItem := &models.OrderItem{
+		ID:         uuid.New().String(),
+		OrderID:    orderID,
+		MenuItemID: itemData.MenuItemID,
+		Quantity:   itemData.Quantity,
+		UnitPrice:  menuItem.Price,
+		TotalPrice: itemTotal,
+	}
+
+	_, err = s.orderItemRepo.CreateOrderItem(orderItem)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create order item: %v", err)
+	}
+
+	// Calculate the new total
 	newTotal := order.TotalAmount.Add(itemTotal)
 
-	// In a complete implementation, we would add the item to the database
-	// For now, just update the order total
+	// Update the order total
 	err = s.orderRepo.UpdateOrderTotal(orderID, newTotal.String(), order.DiscountAmount.String(), order.TaxAmount.String())
 	if err != nil {
 		return nil, fmt.Errorf("failed to update order total: %v", err)
 	}
 
-	// Update the order's updated_at timestamp by fetching it again
+	// Fetch the updated order
 	updatedOrder, err := s.orderRepo.GetOrder(orderID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch updated order: %v", err)
@@ -246,9 +304,9 @@ func (s *OrderService) AddItemToOrder(orderID string, userID string, itemData *m
 	return &types.APIResponse{
 		Success: true,
 		Data: map[string]interface{}{
-			"message":           "Item added to order successfully",
+			"message":             "Item added to order successfully",
 			"updated_order_total": updatedOrder.TotalAmount,
-			// In a complete implementation, this would also return the added item details
+			"added_item":          orderItem,
 		},
 	}, nil
 }
@@ -303,8 +361,58 @@ func (s *OrderService) CompleteOrder(orderID string, userID string, updateData *
 		return nil, fmt.Errorf("failed to update order status: %v", err)
 	}
 
-	// In a complete implementation, we would reduce inventory here
-	// For now, just simulate the inventory update
+	// Reduce inventory for the items in the order
+	orderItems, err := s.orderItemRepo.GetOrderItemsByOrderID(orderID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get order items: %v", err)
+	}
+
+	for _, orderItem := range orderItems {
+		// Fetch current inventory for the menu item
+		inventory, err := s.inventoryRepo.GetInventoryByMenuItem(orderItem.MenuItemID)
+		if err != nil {
+			// If no inventory exists for this item, create a new record
+			err = s.inventoryRepo.CreateInventoryRecord(orderItem.MenuItemID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create inventory record for menu item %s: %v", orderItem.MenuItemID, err)
+			}
+			
+			// Try to fetch again
+			inventory, err = s.inventoryRepo.GetInventoryByMenuItem(orderItem.MenuItemID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get inventory for menu item %s: %v", orderItem.MenuItemID, err)
+			}
+		}
+
+		// Update inventory stock (reduce by the quantity ordered)
+		newStock := inventory.CurrentStock - orderItem.Quantity
+		if newStock < 0 {
+			newStock = 0 // Ensure we don't have negative stock
+		}
+
+		err = s.inventoryRepo.UpdateInventoryStock(orderItem.MenuItemID, newStock, userID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update inventory stock for menu item %s: %v", orderItem.MenuItemID, err)
+		}
+
+		// Create a stock transaction record
+		stockTransaction := &models.StockTransaction{
+			ID:              uuid.New().String(),
+			MenuItemID:      orderItem.MenuItemID,
+			TransactionType: types.TransactionTypeOut, // Using the defined transaction type
+			Quantity:        -orderItem.Quantity, // Negative value for reduction (already int, not int32)
+			PreviousStock:   inventory.CurrentStock, // Set the previous stock
+			CurrentStock:    newStock, // Set the current stock after reduction
+			Reason:          fmt.Sprintf("Order %s completion", orderID),
+			// UserID is optional in the model, so setting it to a pointer
+			UserID: &userID,
+		}
+
+		_, err = s.stockTransactionRepo.CreateStockTransaction(stockTransaction)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create stock transaction for menu item %s: %v", orderItem.MenuItemID, err)
+		}
+	}
 
 	// Fetch the updated order
 	updatedOrder, err := s.orderRepo.GetOrder(orderID)

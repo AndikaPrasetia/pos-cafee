@@ -141,9 +141,10 @@ func (s *ReportService) GetFinancialSummaryReport(startDateStr, endDateStr strin
 		}
 	}
 
-	// For now, we'll return a basic financial summary
-	// In a complete implementation, we would also fetch expenses
-	var totalExpenses types.DecimalText
+	// In a complete implementation, we would fetch expenses from the repository
+	// For now, we'll simulate this by creating a placeholder
+	// Calculate total expenses
+	var totalExpenses types.DecimalText = types.DecimalText(decimal.Zero) // Placeholder - would sum actual expenses
 	var expenses []map[string]interface{}
 
 	// Calculate profit

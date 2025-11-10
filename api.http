@@ -106,7 +106,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Menu by ID
-GET {{baseUrl}}/api/menu/items/a6ed9823-af54-49c3-a64e-65e97ce0c3eb
+GET {{baseUrl}}/api/menu/items/26b1b3d8-278d-4214-816f-484233896756
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -124,4 +124,165 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 DELETE {{baseUrl}}/api/menu/items/1a129b98-8237-49ed-8722-cdc253f53bb9
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
+
+### Create Order
+POST {{baseUrl}}/api/orders/
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "items": [
+    {
+      "menu_item_id": "26b1b3d8-278d-4214-816f-484233896756",
+      "quantity": 2
+    },
+    {
+      "menu_item_id": "ca51716d-445f-48d0-9da4-27e3424bd859",
+      "quantity": 1
+    }
+  ]
+}
+
+### Get Order
+GET {{baseUrl}}/api/orders/1b86e616-d450-4a73-a85d-8a5e23fd32aa
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### List Orders
+GET {{baseUrl}}/api/orders/
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### Update Order Payment
+PUT {{baseUrl}}/api/orders/1b86e616-d450-4a73-a85d-8a5e23fd32aa/complete
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "payment_method": "cash",
+  "payment_status": "paid"
+}
+
+### Cancel Order
+PUT {{baseUrl}}/api/orders/b575ca84-912c-44a6-abd0-a39fe26ea759/cancel
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "reason": "Customer changed their mind"
+}
+
+### Add Item to Order
+POST {{baseUrl}}/api/orders/1b86e616-d450-4a73-a85d-8a5e23fd32aa/items
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "menu_item_id": "26b1b3d8-278d-4214-816f-484233896756",
+  "quantity": 1
+}
+
+### List Inventory
+GET {{baseUrl}}/api/inventory/
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### Get Low Stock Items
+GET {{baseUrl}}/api/inventory/low-stock
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### Update Inventory
+POST {{baseUrl}}/api/inventory/adjust
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "menu_item_id": "26b1b3d8-278d-4214-816f-484233896756",
+  "quantity": 10,
+  "reason": "Restock from supplier"
+}
+
+### List Stock Transactions
+GET {{baseUrl}}/api/inventory/transactions
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### Create Expense
+POST {{baseUrl}}/api/expenses/
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "category": "Utilities",
+  "description": "Electricity bill for October",
+  "amount": "150000",
+  "date": "2025-10-15T00:00:00Z"
+}
+
+### Get Expense
+GET {{baseUrl}}/api/expenses/expense-id-here
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### List Expenses
+GET {{baseUrl}}/api/expenses/
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+?start_date=2025-10-01
+&end_date=2025-10-31
+&category=Utilities
+&limit=10
+&offset=0
+
+### Update Expense
+PUT {{baseUrl}}/api/expenses/expense-id-here
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "category": "Office Supplies",
+  "amount": "75000",
+  "date": "2025-10-16T00:00:00Z"
+}
+
+### Delete Expense
+DELETE {{baseUrl}}/api/expenses/expense-id-here
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### Get Expense Summary
+GET {{baseUrl}}/api/expenses/summary
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+?start_date=2025-10-01
+&end_date=2025-10-31
+
+### Daily Sales Report
+GET {{baseUrl}}/api/reports/daily-sales
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+?date=2025-10-15
+
+### Financial Summary Report
+GET {{baseUrl}}/api/reports/financial-summary
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+?start_date=2025-10-01
+&end_date=2025-10-31
+
+### Sales by Category Report
+GET {{baseUrl}}/api/reports/sales-by-category
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+?start_date=2025-10-01
+&end_date=2025-10-31
+
+### Top Selling Items Report
+GET {{baseUrl}}/api/reports/top-selling-items
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+?start_date=2025-10-01
+&end_date=2025-10-31
+&limit=10
 

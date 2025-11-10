@@ -20,6 +20,14 @@ type Category struct {
 	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
 }
 
+type DailySalesSummary struct {
+	SaleDate      time.Time `db:"sale_date" json:"sale_date"`
+	TotalOrders   int64     `db:"total_orders" json:"total_orders"`
+	TotalSales    int64     `db:"total_sales" json:"total_sales"`
+	TotalDiscount int64     `db:"total_discount" json:"total_discount"`
+	TotalTax      int64     `db:"total_tax" json:"total_tax"`
+}
+
 type Expense struct {
 	ID          uuid.UUID      `db:"id" json:"id"`
 	Category    string         `db:"category" json:"category"`
@@ -40,6 +48,18 @@ type Inventory struct {
 	LastUpdatedBy uuid.NullUUID `db:"last_updated_by" json:"last_updated_by"`
 }
 
+type InventoryWithDetail struct {
+	ID                    uuid.UUID      `db:"id" json:"id"`
+	MenuItemID            uuid.UUID      `db:"menu_item_id" json:"menu_item_id"`
+	MenuItemName          string         `db:"menu_item_name" json:"menu_item_name"`
+	CurrentStock          int32          `db:"current_stock" json:"current_stock"`
+	MinimumStock          int32          `db:"minimum_stock" json:"minimum_stock"`
+	Unit                  string         `db:"unit" json:"unit"`
+	LastUpdatedAt         time.Time      `db:"last_updated_at" json:"last_updated_at"`
+	LastUpdatedByUsername sql.NullString `db:"last_updated_by_username" json:"last_updated_by_username"`
+	StockStatus           string         `db:"stock_status" json:"stock_status"`
+}
+
 type MenuItem struct {
 	ID          uuid.UUID      `db:"id" json:"id"`
 	Name        string         `db:"name" json:"name"`
@@ -50,6 +70,28 @@ type MenuItem struct {
 	IsAvailable bool           `db:"is_available" json:"is_available"`
 	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
+}
+
+type MenuItemsWithCategory struct {
+	ID                  uuid.UUID      `db:"id" json:"id"`
+	Name                string         `db:"name" json:"name"`
+	Description         sql.NullString `db:"description" json:"description"`
+	Price               string         `db:"price" json:"price"`
+	Cost                string         `db:"cost" json:"cost"`
+	IsAvailable         bool           `db:"is_available" json:"is_available"`
+	CreatedAt           time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt           time.Time      `db:"updated_at" json:"updated_at"`
+	CategoryID          uuid.UUID      `db:"category_id" json:"category_id"`
+	CategoryName        string         `db:"category_name" json:"category_name"`
+	CategoryDescription sql.NullString `db:"category_description" json:"category_description"`
+}
+
+type MonthlySalesSummary struct {
+	SaleMonth     time.Time `db:"sale_month" json:"sale_month"`
+	TotalOrders   int64     `db:"total_orders" json:"total_orders"`
+	TotalSales    int64     `db:"total_sales" json:"total_sales"`
+	TotalDiscount int64     `db:"total_discount" json:"total_discount"`
+	TotalTax      int64     `db:"total_tax" json:"total_tax"`
 }
 
 type Order struct {
@@ -74,6 +116,37 @@ type OrderItem struct {
 	Quantity   int32     `db:"quantity" json:"quantity"`
 	UnitPrice  string    `db:"unit_price" json:"unit_price"`
 	TotalPrice string    `db:"total_price" json:"total_price"`
+	CreatedAt  time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt  time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type OrderItemsWithDetail struct {
+	ID           uuid.UUID `db:"id" json:"id"`
+	OrderID      uuid.UUID `db:"order_id" json:"order_id"`
+	OrderNumber  string    `db:"order_number" json:"order_number"`
+	MenuItemID   uuid.UUID `db:"menu_item_id" json:"menu_item_id"`
+	MenuItemName string    `db:"menu_item_name" json:"menu_item_name"`
+	Quantity     int32     `db:"quantity" json:"quantity"`
+	UnitPrice    string    `db:"unit_price" json:"unit_price"`
+	TotalPrice   string    `db:"total_price" json:"total_price"`
+}
+
+type OrdersWithUser struct {
+	ID             uuid.UUID      `db:"id" json:"id"`
+	OrderNumber    string         `db:"order_number" json:"order_number"`
+	UserID         uuid.UUID      `db:"user_id" json:"user_id"`
+	Username       string         `db:"username" json:"username"`
+	FirstName      string         `db:"first_name" json:"first_name"`
+	LastName       string         `db:"last_name" json:"last_name"`
+	Status         string         `db:"status" json:"status"`
+	TotalAmount    string         `db:"total_amount" json:"total_amount"`
+	DiscountAmount string         `db:"discount_amount" json:"discount_amount"`
+	TaxAmount      string         `db:"tax_amount" json:"tax_amount"`
+	PaymentMethod  sql.NullString `db:"payment_method" json:"payment_method"`
+	PaymentStatus  string         `db:"payment_status" json:"payment_status"`
+	CompletedAt    sql.NullTime   `db:"completed_at" json:"completed_at"`
+	CreatedAt      time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time      `db:"updated_at" json:"updated_at"`
 }
 
 type StockTransaction struct {
@@ -88,6 +161,16 @@ type StockTransaction struct {
 	ReferenceID     uuid.NullUUID  `db:"reference_id" json:"reference_id"`
 	UserID          uuid.NullUUID  `db:"user_id" json:"user_id"`
 	CreatedAt       time.Time      `db:"created_at" json:"created_at"`
+}
+
+type TopSellingItem struct {
+	MenuItemID        uuid.UUID      `db:"menu_item_id" json:"menu_item_id"`
+	MenuItemName      string         `db:"menu_item_name" json:"menu_item_name"`
+	Description       sql.NullString `db:"description" json:"description"`
+	CategoryName      string         `db:"category_name" json:"category_name"`
+	TotalQuantitySold int64          `db:"total_quantity_sold" json:"total_quantity_sold"`
+	TotalRevenue      int64          `db:"total_revenue" json:"total_revenue"`
+	TimesOrdered      int64          `db:"times_ordered" json:"times_ordered"`
 }
 
 type User struct {

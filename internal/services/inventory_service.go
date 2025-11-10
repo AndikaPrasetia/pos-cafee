@@ -143,15 +143,24 @@ func getTransactionType(quantity int) types.TransactionType {
 
 // ListStockTransactions retrieves a list of stock transactions with optional filtering
 func (s *InventoryService) ListStockTransactions(filter models.StockTransactionFilter) (*types.APIResponse, error) {
-	// In a complete implementation, this would call the repository
-	// For now, we'll return an empty list
-	transactions := []models.StockTransaction{}
-	
+	transactions, err := s.stockTransactionRepo.ListStockTransactions(filter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list stock transactions: %v", err)
+	}
+
 	return &types.APIResponse{
 		Success: true,
 		Data:    transactions,
 	}, nil
 }
+
+
+
+
+
+
+
+
 
 // ValidateInventoryForOrder checks if there is sufficient inventory for an order
 func (s *InventoryService) ValidateInventoryForOrder(items []models.OrderItemCreate) error {
