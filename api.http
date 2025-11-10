@@ -72,18 +72,56 @@ GET {{baseUrl}}/api/menu/categories/a6ed9823-af54-49c3-a64e-65e97ce0c3eb
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
-### Create Categories
+### Update Categories
 PUT {{baseUrl}}/api/menu/categories/a6ed9823-af54-49c3-a64e-65e97ce0c3eb
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "name": "Coffee Updated",
+  "name": "Coffee",
   "description": "Minuman kopi berbagai jenis"
 }
 
 ### Delete Categories
 DELETE {{baseUrl}}/api/menu/categories/1a129b98-8237-49ed-8722-cdc253f53bb9
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### List Menu
+GET {{baseUrl}}/api/menu/items
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### Create Menu
+POST {{baseUrl}}/api/menu/items
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "name": "Mocha",
+  "category_id": "a6ed9823-af54-49c3-a64e-65e97ce0c3eb",
+  "description": "Espresso, coklat, steamed milk",
+  "price": 15000,
+  "cost": 5000
+}
+
+### Get Menu by ID
+GET {{baseUrl}}/api/menu/items/a6ed9823-af54-49c3-a64e-65e97ce0c3eb
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### Create Menu
+PUT {{baseUrl}}/api/menu/items/a6ed9823-af54-49c3-a64e-65e97ce0c3eb
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "name": "Coffee",
+  "description": "Minuman kopi berbagai jenis"
+}
+
+### Delete Menu
+DELETE {{baseUrl}}/api/menu/items/1a129b98-8237-49ed-8722-cdc253f53bb9
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
