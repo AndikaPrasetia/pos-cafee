@@ -14,12 +14,12 @@ POST {{baseUrl}}/api/auth/register
 Content-Type: {{contentType}}
 
 {
-  "username": "admin",
-  "email": "admin@test.com",
+  "username": "kasir",
+  "email": "kasir@test.com",
   "password": "@Dm!n123",
-  "role": "admin",
-  "first_name": "admin",
-  "last_name": "mimin"
+  "role": "cashier",
+  "first_name": "pak",
+  "last_name": "kasir"
 }
 
 ### Login
@@ -28,12 +28,12 @@ POST {{baseUrl}}/api/auth/login
 Content-Type: {{contentType}}
 
 {
-  "username": "admin",
-  "password": "Newp@ssword123!"
+  "username": "manager",
+  "password": "@Dm!n123"
 }
 
-### Categories
-GET {{baseUrl}}/api/menu/categories
+### Logout
+POST {{baseUrl}}/api/auth/logout
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -51,4 +51,39 @@ Authorization: Bearer {{login.response.body.$.data.token}}
   "current_password": "@Dm!n123",
   "new_password": "Newp@ssword123!"
 }
+
+### List Categories
+GET {{baseUrl}}/api/menu/categories
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### Create Categories
+POST {{baseUrl}}/api/menu/categories
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "name": "Coffee",
+  "description": "Minuman kopi berbagai jenis"
+}
+
+### Get Categories by ID
+GET {{baseUrl}}/api/menu/categories/a6ed9823-af54-49c3-a64e-65e97ce0c3eb
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+### Create Categories
+PUT {{baseUrl}}/api/menu/categories/a6ed9823-af54-49c3-a64e-65e97ce0c3eb
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
+
+{
+  "name": "Coffee Updated",
+  "description": "Minuman kopi berbagai jenis"
+}
+
+### Delete Categories
+DELETE {{baseUrl}}/api/menu/categories/1a129b98-8237-49ed-8722-cdc253f53bb9
+Content-Type: {{contentType}}
+Authorization: Bearer {{login.response.body.$.data.token}}
 

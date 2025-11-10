@@ -49,8 +49,8 @@ func (s *AuthService) Login(loginData *models.UserLogin) (*types.APIResponse, er
 
 	return &types.APIResponse{
 		Success: true,
-		Data: map[string]interface{}{
-			"user": map[string]interface{}{
+		Data: map[string]any{
+			"user": map[string]any{
 				"id":         user.ID,
 				"username":   user.Username,
 				"email":      user.Email,
@@ -115,8 +115,8 @@ func (s *AuthService) Register(registerData *models.UserRegister) (*types.APIRes
 
 	return &types.APIResponse{
 		Success: true,
-		Data: map[string]interface{}{
-			"user": map[string]interface{}{
+		Data: map[string]any{
+			"user": map[string]any{
 				"id":         createdUser.ID,
 				"username":   createdUser.Username,
 				"email":      createdUser.Email,
@@ -139,7 +139,7 @@ func (s *AuthService) GetUserProfile(userID string) (*types.APIResponse, error) 
 
 	return &types.APIResponse{
 		Success: true,
-		Data: map[string]interface{}{
+		Data: map[string]any{
 			"id":         user.ID,
 			"username":   user.Username,
 			"email":      user.Email,
@@ -185,17 +185,17 @@ func (s *AuthService) ValidateUserAccess(userID, requiredRole string) (bool, err
 
 	// Check if the user has the required role or higher
 	userRole := string(user.Role)
-	
+
 	// Admin can access everything
 	if userRole == "admin" {
 		return true, nil
 	}
-	
+
 	// Manager can access most things except admin-specific features
 	if userRole == "manager" && requiredRole != "admin" {
 		return true, nil
 	}
-	
+
 	// Cashier has limited access, mostly to POS functions
 	if userRole == "cashier" && (requiredRole == "cashier") {
 		return true, nil
