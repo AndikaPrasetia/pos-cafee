@@ -15,9 +15,9 @@ LIMIT 1;
 -- name: ListExpenses :many
 SELECT id, category, description, amount, date, user_id, created_at
 FROM expenses
-WHERE ($1::date IS NULL OR date >= $1)
-  AND ($2::date IS NULL OR date <= $2)
-  AND ($3::text IS NULL OR category = $3)
+WHERE ($1 = '0001-01-01'::date OR date >= $1)
+  AND ($2 = '0001-01-01'::date OR date <= $2)
+  AND ($3 = '' OR category = $3)
 ORDER BY date DESC, created_at DESC
 LIMIT $4 OFFSET $5;
 

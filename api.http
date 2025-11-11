@@ -98,15 +98,15 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "name": "Mocha",
-  "category_id": "a6ed9823-af54-49c3-a64e-65e97ce0c3eb",
-  "description": "Espresso, coklat, steamed milk",
-  "price": 15000,
-  "cost": 5000
+      "name": "Espresso",
+      "category_id": "a6ed9823-af54-49c3-a64e-65e97ce0c3eb",
+      "description": "Kopi espresso murni 30ml",
+      "price": "15000",
+      "cost": "5000"
 }
 
 ### Get Menu by ID
-GET {{baseUrl}}/api/menu/items/26b1b3d8-278d-4214-816f-484233896756
+GET {{baseUrl}}/api/menu/items/e16550d7-f84a-4eba-92bb-a3c5d068d274
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -121,7 +121,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Delete Menu
-DELETE {{baseUrl}}/api/menu/items/1a129b98-8237-49ed-8722-cdc253f53bb9
+DELETE {{baseUrl}}/api/menu/items/26b1b3d8-278d-4214-816f-484233896756
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -133,8 +133,8 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 {
   "items": [
     {
-      "menu_item_id": "26b1b3d8-278d-4214-816f-484233896756",
-      "quantity": 2
+      "menu_item_id": "e16550d7-f84a-4eba-92bb-a3c5d068d274",
+      "quantity": 1
     },
     {
       "menu_item_id": "ca51716d-445f-48d0-9da4-27e3424bd859",
@@ -144,7 +144,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Order
-GET {{baseUrl}}/api/orders/1b86e616-d450-4a73-a85d-8a5e23fd32aa
+GET {{baseUrl}}/api/orders/61c38936-6627-4458-8868-def3a348a9c2
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -154,12 +154,12 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Order Payment
-PUT {{baseUrl}}/api/orders/1b86e616-d450-4a73-a85d-8a5e23fd32aa/complete
+PUT {{baseUrl}}/api/orders/61c38936-6627-4458-8868-def3a348a9c2/complete
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "payment_method": "cash",
+  "payment_method": "qris",
   "payment_status": "paid"
 }
 
@@ -173,12 +173,12 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Add Item to Order
-POST {{baseUrl}}/api/orders/1b86e616-d450-4a73-a85d-8a5e23fd32aa/items
+POST {{baseUrl}}/api/orders/61c38936-6627-4458-8868-def3a348a9c2/items
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "menu_item_id": "26b1b3d8-278d-4214-816f-484233896756",
+  "menu_item_id": "bbe182a5-e2cd-4327-b4b7-57cc04dafa64",
   "quantity": 1
 }
 
@@ -198,8 +198,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "menu_item_id": "26b1b3d8-278d-4214-816f-484233896756",
-  "quantity": 10,
+  "menu_item_id": "a2bea4ee-3a9b-4857-b6b6-1615570eb43d",
+  "quantity": 9,
   "reason": "Restock from supplier"
 }
 
@@ -221,7 +221,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Expense
-GET {{baseUrl}}/api/expenses/expense-id-here
+GET {{baseUrl}}/api/expenses/b0ca6c64-6530-4f11-a9c4-0b0bd0b11832
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -231,12 +231,12 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 ?start_date=2025-10-01
 &end_date=2025-10-31
-&category=Utilities
+&category=Office Supplies
 &limit=10
 &offset=0
 
 ### Update Expense
-PUT {{baseUrl}}/api/expenses/expense-id-here
+PUT {{baseUrl}}/api/expenses/b0ca6c64-6530-4f11-a9c4-0b0bd0b11832
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 

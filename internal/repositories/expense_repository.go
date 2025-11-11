@@ -117,14 +117,13 @@ func (r *expenseRepo) ListExpenses(filter models.ExpenseFilter) ([]*models.Expen
 	if filter.StartDate != nil {
 		startDate = *filter.StartDate
 	} else {
-		// If nil, use zero time which will be ignored by the query thanks to the NULL check
-		startDate = time.Time{}
+		startDate = time.Time{} // Zero time will be handled by the SQL query
 	}
 
 	if filter.EndDate != nil {
 		endDate = *filter.EndDate
 	} else {
-		endDate = time.Time{}
+		endDate = time.Time{} // Zero time will be handled by the SQL query
 	}
 
 	if filter.Category != nil {

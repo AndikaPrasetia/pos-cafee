@@ -86,19 +86,19 @@ func (q *Queries) GetExpense(ctx context.Context, id uuid.UUID) (Expense, error)
 const listExpenses = `-- name: ListExpenses :many
 SELECT id, category, description, amount, date, user_id, created_at
 FROM expenses
-WHERE ($1::date IS NULL OR date >= $1)
-  AND ($2::date IS NULL OR date <= $2)
-  AND ($3::text IS NULL OR category = $3)
+WHERE ($1 = '0001-01-01'::date OR date >= $1)
+  AND ($2 = '0001-01-01'::date OR date <= $2)
+  AND ($3 = '' OR category = $3)
 ORDER BY date DESC, created_at DESC
 LIMIT $4 OFFSET $5
 `
 
 type ListExpensesParams struct {
-	Column1 time.Time `db:"column_1" json:"column_1"`
-	Column2 time.Time `db:"column_2" json:"column_2"`
-	Column3 string    `db:"column_3" json:"column_3"`
-	Limit   int32     `db:"limit" json:"limit"`
-	Offset  int32     `db:"offset" json:"offset"`
+	Column1 interface{} `db:"column_1" json:"column_1"`
+	Column2 interface{} `db:"column_2" json:"column_2"`
+	Column3 interface{} `db:"column_3" json:"column_3"`
+	Limit   int32       `db:"limit" json:"limit"`
+	Offset  int32       `db:"offset" json:"offset"`
 }
 
 func (q *Queries) ListExpenses(ctx context.Context, arg ListExpensesParams) ([]Expense, error) {

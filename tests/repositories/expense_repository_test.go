@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -16,7 +15,7 @@ func TestExpenseRepository(t *testing.T) {
 	// Setup test database connection
 	dbConn := setupTestDB(t)
 	defer dbConn.Close()
-	
+
 	queries := db.New(dbConn)
 	expenseRepo := &expenseRepo{queries: queries}
 
@@ -63,7 +62,7 @@ func TestExpenseRepository(t *testing.T) {
 			UserID:      &userID,
 			CreatedAt:   time.Now(),
 		}
-		
+
 		expense2 := &models.Expense{
 			ID:          "expense-2",
 			Category:    "Transport",
@@ -73,10 +72,10 @@ func TestExpenseRepository(t *testing.T) {
 			UserID:      &userID,
 			CreatedAt:   time.Now(),
 		}
-		
+
 		_, err := expenseRepo.CreateExpense(expense1)
 		assert.NoError(t, err)
-		
+
 		_, err = expenseRepo.CreateExpense(expense2)
 		assert.NoError(t, err)
 
@@ -99,7 +98,7 @@ func TestExpenseRepository(t *testing.T) {
 		updatedCategory := "Office Supplies"
 		updatedDescription := "New description"
 		updatedAmount := types.DecimalText(decimal.NewFromFloat(75.25))
-		
+
 		createdExpense.Category = updatedCategory
 		createdExpense.Description = updatedDescription
 		createdExpense.Amount = updatedAmount
