@@ -41,7 +41,7 @@ func main() {
 	orderService := services.NewOrderService(repo.OrderRepo, repo.OrderItemRepo, repo.MenuRepo, repo.InventoryRepo, repo.StockTransactionRepo)
 	inventoryService := services.NewInventoryService(repo.InventoryRepo, repo.StockTransactionRepo, repo.MenuRepo)
 	expenseService := services.NewExpenseService(repo.ExpenseRepo)
-	reportService := services.NewReportService(repo.OrderRepo, repo.MenuRepo, repo.InventoryRepo, repo.ExpenseRepo)
+	reportService := services.NewReportService(repo.OrderRepo, repo.MenuRepo, repo.InventoryRepo, repo.ExpenseRepo, repo.Queries)
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService)

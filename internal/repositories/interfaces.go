@@ -90,6 +90,7 @@ type Repository struct {
 	InventoryRepo        InventoryRepo
 	StockTransactionRepo StockTransactionRepo
 	ExpenseRepo          ExpenseRepo
+	Queries              *db.Queries
 }
 
 // NewRepository creates a new Repository instance with concrete implementations
@@ -104,6 +105,7 @@ func NewRepository(dbConn *sql.DB) *Repository {
 		InventoryRepo:        &inventoryRepo{queries: queries}, // This is defined in inventory_repository.go
 		StockTransactionRepo: &stockTransactionRepo{queries: queries}, // This is defined in stock_transaction_repository.go
 		ExpenseRepo:          &expenseRepo{queries: queries}, // This is defined in expense_repository.go
+		Queries:              queries,
 	}
 }
 

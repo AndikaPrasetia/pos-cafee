@@ -6,6 +6,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -26,7 +27,9 @@ type Querier interface {
 	DeleteOrderItemsByOrderID(ctx context.Context, orderID uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	GetCategory(ctx context.Context, id uuid.UUID) (Category, error)
+	GetDailySalesReportData(ctx context.Context, dollar_1 time.Time) (GetDailySalesReportDataRow, error)
 	GetExpense(ctx context.Context, id uuid.UUID) (Expense, error)
+	GetFinancialSummaryByDateRange(ctx context.Context, arg GetFinancialSummaryByDateRangeParams) (GetFinancialSummaryByDateRangeRow, error)
 	GetInventoryByMenuItem(ctx context.Context, menuItemID uuid.UUID) (Inventory, error)
 	GetMenuItem(ctx context.Context, id uuid.UUID) (MenuItem, error)
 	GetOrder(ctx context.Context, id uuid.UUID) (Order, error)
@@ -34,6 +37,8 @@ type Querier interface {
 	GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, error)
 	GetOrderItemsByOrderID(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
 	GetOrderItemsWithDetails(ctx context.Context, orderID uuid.UUID) ([]GetOrderItemsWithDetailsRow, error)
+	GetSalesByCategoryByDateRange(ctx context.Context, arg GetSalesByCategoryByDateRangeParams) ([]GetSalesByCategoryByDateRangeRow, error)
+	GetTopSellingItemsByDateRange(ctx context.Context, arg GetTopSellingItemsByDateRangeParams) ([]GetTopSellingItemsByDateRangeRow, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)

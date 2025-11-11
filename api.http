@@ -9,6 +9,8 @@
 ### Variables
 # These variables will be populated by successful requests
 
+############################################# AUTH #######
+
 ### Register
 POST {{baseUrl}}/api/auth/register
 Content-Type: {{contentType}}
@@ -52,6 +54,8 @@ Authorization: Bearer {{login.response.body.$.data.token}}
   "new_password": "Newp@ssword123!"
 }
 
+############################################ CATEGORY #####
+
 ### List Categories
 GET {{baseUrl}}/api/menu/categories
 Content-Type: {{contentType}}
@@ -86,6 +90,8 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 DELETE {{baseUrl}}/api/menu/categories/1a129b98-8237-49ed-8722-cdc253f53bb9
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
+
+############################################# MENU #######
 
 ### List Menu
 GET {{baseUrl}}/api/menu/items
@@ -125,6 +131,8 @@ DELETE {{baseUrl}}/api/menu/items/26b1b3d8-278d-4214-816f-484233896756
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
+############################################# ORDER ######
+
 ### Create Order
 POST {{baseUrl}}/api/orders/
 Content-Type: {{contentType}}
@@ -134,17 +142,17 @@ Authorization: Bearer {{login.response.body.$.data.token}}
   "items": [
     {
       "menu_item_id": "e16550d7-f84a-4eba-92bb-a3c5d068d274",
-      "quantity": 1
+      "quantity": 11
     },
     {
       "menu_item_id": "ca51716d-445f-48d0-9da4-27e3424bd859",
-      "quantity": 1
+      "quantity": 12
     }
   ]
 }
 
 ### Get Order
-GET {{baseUrl}}/api/orders/61c38936-6627-4458-8868-def3a348a9c2
+GET {{baseUrl}}/api/orders/c125436a-78ac-4508-b6e4-b95e82974cb5
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -154,7 +162,7 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Order Payment
-PUT {{baseUrl}}/api/orders/61c38936-6627-4458-8868-def3a348a9c2/complete
+PUT {{baseUrl}}/api/orders/c125436a-78ac-4508-b6e4-b95e82974cb5/complete
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -182,6 +190,8 @@ Authorization: Bearer {{login.response.body.$.data.token}}
   "quantity": 1
 }
 
+######################################### INVENTORY ######
+
 ### List Inventory
 GET {{baseUrl}}/api/inventory/
 Content-Type: {{contentType}}
@@ -207,6 +217,8 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 GET {{baseUrl}}/api/inventory/transactions
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
+
+########################################### EXPENSE ######
 
 ### Create Expense
 POST {{baseUrl}}/api/expenses/
@@ -258,11 +270,13 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 ?start_date=2025-10-01
 &end_date=2025-10-31
 
+########################################### # REPORT ######
+
 ### Daily Sales Report
 GET {{baseUrl}}/api/reports/daily-sales
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
-?date=2025-10-15
+?date=2025-11-11
 
 ### Financial Summary Report
 GET {{baseUrl}}/api/reports/financial-summary
