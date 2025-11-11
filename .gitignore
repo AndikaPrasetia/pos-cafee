@@ -21,6 +21,7 @@ QWEN.md
 _work/
 _coverage/
 _cover/
+bin/
 
 # Dependencies
 vendor/

@@ -9,7 +9,7 @@
 ### Variables
 # These variables will be populated by successful requests
 
-############################################# AUTH #######
+############################################## AUTH  ######
 
 ### Register
 POST {{baseUrl}}/api/auth/register
@@ -31,7 +31,7 @@ Content-Type: {{contentType}}
 
 {
   "username": "manager",
-  "password": "@Dm!n123"
+  "password": "Newp@ssword123!"
 }
 
 ### Logout
@@ -54,7 +54,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
   "new_password": "Newp@ssword123!"
 }
 
-############################################ CATEGORY #####
+############################################ CATEGORY  #####
 
 ### List Categories
 GET {{baseUrl}}/api/menu/categories
@@ -91,7 +91,7 @@ DELETE {{baseUrl}}/api/menu/categories/1a129b98-8237-49ed-8722-cdc253f53bb9
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
-############################################# MENU #######
+############################################# MENU  #######
 
 ### List Menu
 GET {{baseUrl}}/api/menu/items
@@ -104,15 +104,15 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-      "name": "Espresso",
-      "category_id": "a6ed9823-af54-49c3-a64e-65e97ce0c3eb",
-      "description": "Kopi espresso murni 30ml",
-      "price": "15000",
-      "cost": "5000"
+      "name": "Chicken Pasta",
+      "category_id": "3f9ddca6-d2ed-4021-9aa2-50fb3f205e1f",
+      "description": "Pasta dengan saus cream dan ayam",
+      "price": "40000",
+      "cost": "18000"
 }
 
 ### Get Menu by ID
-GET {{baseUrl}}/api/menu/items/e16550d7-f84a-4eba-92bb-a3c5d068d274
+GET {{baseUrl}}/api/menu/items/a2bea4ee-3a9b-4857-b6b6-1615570eb43d
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -131,7 +131,7 @@ DELETE {{baseUrl}}/api/menu/items/26b1b3d8-278d-4214-816f-484233896756
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
-############################################# ORDER ######
+############################################# ORDER  ######
 
 ### Create Order
 POST {{baseUrl}}/api/orders/
@@ -141,12 +141,12 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 {
   "items": [
     {
-      "menu_item_id": "e16550d7-f84a-4eba-92bb-a3c5d068d274",
-      "quantity": 11
+      "menu_item_id": "bbe182a5-e2cd-4327-b4b7-57cc04dafa64",
+      "quantity": 2
     },
     {
-      "menu_item_id": "ca51716d-445f-48d0-9da4-27e3424bd859",
-      "quantity": 12
+      "menu_item_id": "f03f077b-9f17-4794-9ee6-283b96fcda74",
+      "quantity": 2
     }
   ]
 }
@@ -162,7 +162,7 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Order Payment
-PUT {{baseUrl}}/api/orders/c125436a-78ac-4508-b6e4-b95e82974cb5/complete
+PUT {{baseUrl}}/api/orders/e32ee1cc-c8fe-445a-ab22-d70b9303ff43/complete
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -172,7 +172,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Cancel Order
-PUT {{baseUrl}}/api/orders/b575ca84-912c-44a6-abd0-a39fe26ea759/cancel
+PUT {{baseUrl}}/api/orders/8018bfaf-6fb9-43f9-bbe2-317d7b91af9c/cancel
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -190,7 +190,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
   "quantity": 1
 }
 
-######################################### INVENTORY ######
+######################################### INVENTORY  ######
 
 ### List Inventory
 GET {{baseUrl}}/api/inventory/
@@ -208,8 +208,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "menu_item_id": "a2bea4ee-3a9b-4857-b6b6-1615570eb43d",
-  "quantity": 9,
+  "menu_item_id": "f03f077b-9f17-4794-9ee6-283b96fcda74",
+  "quantity": 1,
   "reason": "Restock from supplier"
 }
 
@@ -217,8 +217,11 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 GET {{baseUrl}}/api/inventory/transactions
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
+?menu_item_id=f03f077b-9f17-4794-9ee6-283b96fcda74
+&limit=50
+&offset=0
 
-########################################### EXPENSE ######
+########################################## EXPENSE  ######
 
 ### Create Expense
 POST {{baseUrl}}/api/expenses/
@@ -270,7 +273,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 ?start_date=2025-10-01
 &end_date=2025-10-31
 
-########################################### # REPORT ######
+########################################## REPORT  ######
 
 ### Daily Sales Report
 GET {{baseUrl}}/api/reports/daily-sales
@@ -282,21 +285,21 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 GET {{baseUrl}}/api/reports/financial-summary
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
-?start_date=2025-10-01
-&end_date=2025-10-31
+?start_date=2025-11-01
+&end_date=2025-11-30
 
 ### Sales by Category Report
 GET {{baseUrl}}/api/reports/sales-by-category
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
-?start_date=2025-10-01
-&end_date=2025-10-31
+?start_date=2025-11-01
+&end_date=2025-11-30
 
 ### Top Selling Items Report
 GET {{baseUrl}}/api/reports/top-selling-items
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
-?start_date=2025-10-01
-&end_date=2025-10-31
+?start_date=2025-11-01
+&end_date=2025-11-30
 &limit=10
 
