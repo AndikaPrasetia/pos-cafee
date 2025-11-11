@@ -20,5 +20,5 @@ SET current_stock = $2, last_updated_at = NOW(), last_updated_by = $3
 WHERE menu_item_id = $1;
 
 -- name: CreateInventoryRecord :exec
-INSERT INTO inventory (menu_item_id)
-VALUES ($1);
+INSERT INTO inventory (menu_item_id, current_stock, minimum_stock, unit)
+VALUES ($1, 0, 0, 'pieces');

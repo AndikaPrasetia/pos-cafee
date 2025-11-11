@@ -72,19 +72,19 @@ SELECT st.id, st.menu_item_id, mi.name as menu_item_name, st.transaction_type,
 FROM stock_transactions st
 LEFT JOIN menu_items mi ON st.menu_item_id = mi.id
 LEFT JOIN users u ON st.user_id = u.id
-WHERE ($1::uuid IS NULL OR st.menu_item_id = $1)
-  AND ($2::date IS NULL OR st.created_at >= $2)
-  AND ($3::date IS NULL OR st.created_at <= $3)
+WHERE ($1 = '00000000-0000-0000-0000-000000000000'::uuid OR st.menu_item_id = $1)
+  AND ($2 = '0001-01-01'::date OR st.created_at >= $2)
+  AND ($3 = '0001-01-01'::date OR st.created_at <= $3)
 ORDER BY st.created_at DESC
 LIMIT $4 OFFSET $5
 `
 
 type ListStockTransactionsParams struct {
-	Column1 uuid.UUID `db:"column_1" json:"column_1"`
-	Column2 time.Time `db:"column_2" json:"column_2"`
-	Column3 time.Time `db:"column_3" json:"column_3"`
-	Limit   int32     `db:"limit" json:"limit"`
-	Offset  int32     `db:"offset" json:"offset"`
+	Column1 interface{} `db:"column_1" json:"column_1"`
+	Column2 interface{} `db:"column_2" json:"column_2"`
+	Column3 interface{} `db:"column_3" json:"column_3"`
+	Limit   int32       `db:"limit" json:"limit"`
+	Offset  int32       `db:"offset" json:"offset"`
 }
 
 type ListStockTransactionsRow struct {

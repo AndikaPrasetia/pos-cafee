@@ -72,6 +72,27 @@ func (s *OrderService) CreateOrder(userID string, orderData *models.OrderCreate)
 			return nil, fmt.Errorf("menu item is not available: %s", menuItem.Name)
 		}
 
+		// Check inventory stock for the menu item
+		inventory, err := s.inventoryRepo.GetInventoryByMenuItem(itemData.MenuItemID)
+		if err != nil {
+			// If no inventory exists for this item, create a new record
+			err = s.inventoryRepo.CreateInventoryRecord(itemData.MenuItemID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create inventory record for menu item %s: %v", itemData.MenuItemID, err)
+			}
+
+			// Try to fetch again
+			inventory, err = s.inventoryRepo.GetInventoryByMenuItem(itemData.MenuItemID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get inventory for menu item %s: %v", itemData.MenuItemID, err)
+			}
+		}
+
+		// Check if sufficient stock is available
+		if inventory.CurrentStock < itemData.Quantity {
+			return nil, fmt.Errorf("insufficient stock for item %s: only %d available, %d requested", menuItem.Name, inventory.CurrentStock, itemData.Quantity)
+		}
+
 		// Calculate item total
 		itemTotal := menuItem.Price.Mul(types.FromDecimal(decimal.NewFromInt(int64(itemData.Quantity))))
 
@@ -336,9 +357,37 @@ func (s *OrderService) CompleteOrder(orderID string, userID string, updateData *
 		return nil, errors.New("order is not in a valid state for completion")
 	}
 
+	// Get order items to check inventory
+	orderItems, err := s.orderItemRepo.GetOrderItemsByOrderID(orderID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get order items: %v", err)
+	}
+
+	// Check inventory availability for each item before completing the order
+	for _, orderItem := range orderItems {
+		// Fetch current inventory for the menu item
+		inventory, err := s.inventoryRepo.GetInventoryByMenuItem(orderItem.MenuItemID)
+		if err != nil {
+			// If no inventory exists for this item, create a new record
+			err = s.inventoryRepo.CreateInventoryRecord(orderItem.MenuItemID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create inventory record for menu item %s: %v", orderItem.MenuItemID, err)
+			}
+
+			// Try to fetch again
+			inventory, err = s.inventoryRepo.GetInventoryByMenuItem(orderItem.MenuItemID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get inventory for menu item %s: %v", orderItem.MenuItemID, err)
+			}
+		}
+
+		// Check if sufficient stock is available
+		if inventory.CurrentStock < orderItem.Quantity {
+			return nil, fmt.Errorf("insufficient stock for item %s: only %d available, %d requested", inventory.MenuItemName, inventory.CurrentStock, orderItem.Quantity)
+		}
+	}
+
 	// Update order with payment information if provided
-	// In a complete implementation, we would check inventory before completing the order
-	// For now, just update the order status and payment information
 	var paymentMethodStr string
 	if updateData.PaymentMethod != nil {
 		paymentMethodStr = string(*updateData.PaymentMethod)
@@ -359,12 +408,6 @@ func (s *OrderService) CompleteOrder(orderID string, userID string, updateData *
 	err = s.UpdateOrderStatus(orderID, types.OrderStatusCompleted)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update order status: %v", err)
-	}
-
-	// Reduce inventory for the items in the order
-	orderItems, err := s.orderItemRepo.GetOrderItemsByOrderID(orderID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get order items: %v", err)
 	}
 
 	for _, orderItem := range orderItems {
@@ -408,9 +451,14 @@ func (s *OrderService) CompleteOrder(orderID string, userID string, updateData *
 			UserID: &userID,
 		}
 
-		_, err = s.stockTransactionRepo.CreateStockTransaction(stockTransaction)
+		createdTransaction, err := s.stockTransactionRepo.CreateStockTransaction(stockTransaction)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create stock transaction for menu item %s: %v", orderItem.MenuItemID, err)
+		}
+		
+		// Verify the transaction was created successfully
+		if createdTransaction == nil {
+			return nil, fmt.Errorf("stock transaction was not created for menu item %s in order %s", orderItem.MenuItemID, orderID)
 		}
 	}
 

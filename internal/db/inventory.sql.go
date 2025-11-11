@@ -14,8 +14,8 @@ import (
 )
 
 const createInventoryRecord = `-- name: CreateInventoryRecord :exec
-INSERT INTO inventory (menu_item_id)
-VALUES ($1)
+INSERT INTO inventory (menu_item_id, current_stock, minimum_stock, unit)
+VALUES ($1, 0, 0, 'pieces')
 `
 
 func (q *Queries) CreateInventoryRecord(ctx context.Context, menuItemID uuid.UUID) error {

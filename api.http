@@ -72,7 +72,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Categories by ID
-GET {{baseUrl}}/api/menu/categories/a6ed9823-af54-49c3-a64e-65e97ce0c3eb
+GET {{baseUrl}}/api/menu/categories/3f9ddca6-d2ed-4021-9aa2-50fb3f205e1f
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -276,7 +276,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 GET {{baseUrl}}/api/reports/daily-sales
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
-?date=2025-11-11
+?date=2025-11-10
 
 ### Financial Summary Report
 GET {{baseUrl}}/api/reports/financial-summary

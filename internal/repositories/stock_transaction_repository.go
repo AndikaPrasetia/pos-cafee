@@ -190,5 +190,10 @@ func (r *stockTransactionRepo) ListStockTransactions(filter models.StockTransact
 		transactions = append(transactions, transaction)
 	}
 
+	// Ensure we return an empty slice instead of nil if no transactions found
+	if transactions == nil {
+		transactions = []*models.StockTransaction{}
+	}
+
 	return transactions, nil
 }

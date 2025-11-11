@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/AndikaPrasetia/pos-cafee/internal/models"
 	"github.com/AndikaPrasetia/pos-cafee/internal/services"
@@ -21,7 +22,7 @@ type InventoryHandler struct {
 func NewInventoryHandler(inventoryService *services.InventoryService) *InventoryHandler {
 	validate := validator.New()
 	types.RegisterValidatorRegistrations(validate)
-	
+
 	return &InventoryHandler{
 		inventoryService: inventoryService,
 		validate:         validate,
@@ -92,12 +93,12 @@ func (h *InventoryHandler) UpdateInventory(c *gin.Context) {
 
 	var updateData models.InventoryUpdate
 	if err := c.ShouldBindJSON(&updateData); err != nil {
-		c.JSON(http.StatusBadRequest, types.APIResponseWithError("Invalid request data: " + err.Error()))
+		c.JSON(http.StatusBadRequest, types.APIResponseWithError("Invalid request data: "+err.Error()))
 		return
 	}
 
 	if err := h.validate.Struct(updateData); err != nil {
-		c.JSON(http.StatusBadRequest, types.APIResponseWithError("Validation error: " + err.Error()))
+		c.JSON(http.StatusBadRequest, types.APIResponseWithError("Validation error: "+err.Error()))
 		return
 	}
 
@@ -122,11 +123,45 @@ func (h *InventoryHandler) ListStockTransactions(c *gin.Context) {
 
 	// Get query parameters
 	menuItemID := c.Query("menu_item_id")
+	startDateStr := c.Query("start_date")
+	endDateStr := c.Query("end_date")
 	limitStr := c.DefaultQuery("limit", "50")
 	offsetStr := c.DefaultQuery("offset", "0")
 
+	// Set default values for optional parameters
 	if menuItemID != "" {
 		filter.MenuItemID = &menuItemID
+	} else {
+		// Use default UUID when not provided
+		defaultUUID := "00000000-0000-0000-0000-000000000000"
+		filter.MenuItemID = &defaultUUID
+	}
+
+	// Parse date parameters if provided
+	if startDateStr != "" {
+		startDate, err := time.Parse("2006-01-02", startDateStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, types.APIResponseWithError("Invalid start date format, expected YYYY-MM-DD"))
+			return
+		}
+		filter.StartDate = &startDate
+	} else {
+		// Use default date when not provided
+		defaultDate := time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC)
+		filter.StartDate = &defaultDate
+	}
+
+	if endDateStr != "" {
+		endDate, err := time.Parse("2006-01-02", endDateStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, types.APIResponseWithError("Invalid end date format, expected YYYY-MM-DD"))
+			return
+		}
+		filter.EndDate = &endDate
+	} else {
+		// Use default date when not provided
+		defaultDate := time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC)
+		filter.EndDate = &defaultDate
 	}
 
 	limit, err := strconv.Atoi(limitStr)
@@ -146,7 +181,8 @@ func (h *InventoryHandler) ListStockTransactions(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, types.APIResponseWithError(err.Error()))
 		return
-	}
+
+}
 
 	c.JSON(http.StatusOK, result)
 }
