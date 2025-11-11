@@ -219,3 +219,43 @@ func (r *expenseRepo) DeleteExpense(id string) error {
 
 	return nil
 }
+// GetExpensesByDateRange retrieves expenses within a date range
+func (r *expenseRepo) GetExpensesByDateRange(startDate, endDate time.Time) ([]*models.Expense, error) {
+	dbExpenses, err := r.queries.ListExpenses(context.Background(), db.ListExpensesParams{
+		Column1: startDate,
+		Column2: endDate,
+		Column3: "",  // Empty string means no category filter
+		Limit:   10000,  // Reasonable limit for expense reports
+		Offset:  0,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch expenses from database: %w", err)
+	}
+
+	var expenses []*models.Expense
+	for _, dbExpense := range dbExpenses {
+		amount, err := decimal.NewFromString(dbExpense.Amount)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse expense amount %s for expense %s: %w", dbExpense.Amount, dbExpense.ID.String(), err)
+		}
+
+		expense := &models.Expense{
+			ID:          dbExpense.ID.String(),
+			Category:    dbExpense.Category,
+			Description: dbExpense.Description.String,
+			Amount:      types.DecimalText(amount),
+			Date:        dbExpense.Date,
+			CreatedAt:   dbExpense.CreatedAt,
+		}
+
+		if dbExpense.UserID.Valid {
+			userIDStr := dbExpense.UserID.UUID.String()
+			expense.UserID = &userIDStr
+		}
+
+		expenses = append(expenses, expense)
+	}
+
+	return expenses, nil
+}
+

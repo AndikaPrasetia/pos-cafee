@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/AndikaPrasetia/pos-cafee/internal/db"
 	"github.com/AndikaPrasetia/pos-cafee/internal/models"
@@ -69,6 +70,7 @@ type ExpenseRepo interface {
 	ListExpenses(filter models.ExpenseFilter) ([]*models.Expense, error)
 	UpdateExpense(expense *models.Expense) (*models.Expense, error)
 	DeleteExpense(id string) error
+	GetExpensesByDateRange(startDate, endDate time.Time) ([]*models.Expense, error)
 }
 
 // OrderItemRepo defines the interface for order item-related database operations

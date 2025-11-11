@@ -15,11 +15,11 @@ import (
 
 // ReportService handles financial reporting business logic
 type ReportService struct {
-	orderRepo       repositories.OrderRepo
-	menuRepo        repositories.MenuRepo
-	inventoryRepo   repositories.InventoryRepo
-	expenseRepo     repositories.ExpenseRepo
-	queries         *db.Queries
+	orderRepo     repositories.OrderRepo
+	menuRepo      repositories.MenuRepo
+	inventoryRepo repositories.InventoryRepo
+	expenseRepo   repositories.ExpenseRepo
+	queries       *db.Queries
 }
 
 // NewReportService creates a new report service
@@ -80,7 +80,7 @@ func (s *ReportService) GetDailySalesReport(dateStr string) (*types.APIResponse,
 	// Get top selling items for this date range
 	startOfDay := time.Date(reportDate.Year(), reportDate.Month(), reportDate.Day(), 0, 0, 0, 0, reportDate.Location())
 	endOfDay := startOfDay.Add(24 * time.Hour).Add(-time.Nanosecond) // End of the day (23:59:59)
-	
+
 	topSellingItems, err := s.queries.GetTopSellingItemsByDateRange(context.Background(), db.GetTopSellingItemsByDateRangeParams{
 		Column1: startOfDay,
 		Column2: endOfDay,
@@ -98,9 +98,9 @@ func (s *ReportService) GetDailySalesReport(dateStr string) (*types.APIResponse,
 			continue // Skip invalid entries
 		}
 		topItems = append(topItems, map[string]interface{}{
-			"menu_item_name": item.MenuItemName,
+			"menu_item_name":      item.MenuItemName,
 			"total_quantity_sold": item.TotalQuantitySold,
-			"total_revenue": types.FromDecimal(totalRevenue),
+			"total_revenue":       types.FromDecimal(totalRevenue),
 		})
 	}
 
@@ -142,52 +142,80 @@ func (s *ReportService) GetFinancialSummaryReport(startDateStr, endDateStr strin
 	// Calculate end of the end date (23:59:59)
 	endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 0, endDate.Location())
 
-	// Create date range filter for orders
-	filter := types.OrderFilter{
-		StartDate: &startDate,
-		EndDate:   &endOfDay,
-		Limit:     10000, // Reasonable limit for the period
-		Offset:    0,
+	// Calculate financial summary from orders
+	summary, err := s.queries.GetFinancialSummaryByDateRange(context.Background(), db.GetFinancialSummaryByDateRangeParams{
+		Column1: startDate,
+		Column2: endOfDay,
+	})
+	if err != nil && err != sql.ErrNoRows {
+		return nil, fmt.Errorf("failed to fetch financial summary: %v", err)
 	}
 
-	orders, err := s.orderRepo.ListOrders(filter)
+	// Convert total sales and other values to decimal
+	totalSales, err := decimal.NewFromString(summary.TotalSales)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch orders: %v", err)
+		return nil, fmt.Errorf("failed to parse total sales: %v", err)
 	}
 
-	// Calculate total sales from completed orders
-	var totalSales types.DecimalText
-	var salesByCategory []map[string]interface{}
-	// categorySales := make(map[string]map[string]interface{})  // Used in a complete implementation
-
-	for _, order := range orders {
-		if order.Status == types.OrderStatusCompleted {
-			totalSales = totalSales.Add(order.TotalAmount)
-
-			// In a complete implementation, we would fetch the order items
-			// and calculate sales by category
-		}
+	// Calculate expenses from expense repository
+	expenses, err := s.expenseRepo.GetExpensesByDateRange(startDate, endOfDay)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch expenses: %v", err)
 	}
 
-	// In a complete implementation, we would fetch expenses from the repository
-	// For now, we'll simulate this by creating a placeholder
-	// Calculate total expenses
-	var totalExpenses types.DecimalText = types.DecimalText(decimal.Zero) // Placeholder - would sum actual expenses
-	var expenses []map[string]interface{}
+	var totalExpenses decimal.Decimal
+	expensesList := make([]map[string]interface{}, 0)
+	for _, expense := range expenses {
+		amountDecimal := decimal.RequireFromString(expense.Amount.String())
+		totalExpenses = totalExpenses.Add(amountDecimal)
+
+		expensesList = append(expensesList, map[string]interface{}{
+			"id":          expense.ID,
+			"category":    expense.Category,
+			"description": expense.Description,
+			"amount":      expense.Amount,
+			"date":        expense.Date,
+			"created_at":  expense.CreatedAt,
+		})
+	}
 
 	// Calculate profit
-	totalProfit := totalSales.Sub(totalExpenses)
+	totalProfit :=  totalSales.Sub(totalExpenses)
+
+	// Get sales by  category breakdown
+	salesByCategory, err := s.queries.GetSalesByCategoryByDateRange(context.Background(), db.GetSalesByCategoryByDateRangeParams{
+		Column1: startDate,
+		Column2: endOfDay,
+	})
+	if err != nil && err != sql.ErrNoRows {
+		return nil, fmt.Errorf("failed to fetch sales by category: %v", err)
+	}
+
+	salesByCategoryList := make([]map[string]interface{}, 0)
+	for _, category := range salesByCategory {
+		totalRevenue, err := decimal.NewFromString(category.TotalRevenue)
+		if err != nil {
+			continue // Skip invalid entries
+		}
+
+		salesByCategoryList = append(salesByCategoryList, map[string]interface{}{
+			"category_name":   category.CategoryName,
+			"items_sold":      int(category.ItemsSold),
+			"total_quantity":  int(category.TotalQuantity),
+			"total_revenue":   types.FromDecimal(totalRevenue),
+		})
+	}
 
 	report := map[string]interface{}{
 		"period": map[string]string{
 			"start_date": startDateStr,
 			"end_date":   endDateStr,
 		},
-		"total_sales":      totalSales,
-		"total_expenses":   totalExpenses,
-		"total_profit":     totalProfit,
-		"sales_by_category": salesByCategory,
-		"expenses":         expenses,
+		"total_sales":       types.FromDecimal(totalSales),
+		"total_expenses":    types.FromDecimal(totalExpenses),
+		"total_profit":      types.FromDecimal(totalProfit),
+		"sales_by_category": salesByCategoryList,
+		"expenses":          expensesList,
 	}
 
 	return &types.APIResponse{
@@ -200,7 +228,7 @@ func (s *ReportService) GetFinancialSummaryReport(startDateStr, endDateStr strin
 func (s *ReportService) GetSalesByCategoryReport(startDateStr, endDateStr string) (*types.APIResponse, error) {
 	// This would be similar to the above but specifically focused on category breakdown
 	// For now, we'll return a placeholder implementation
-	
+
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
 		return nil, errors.New("invalid start date format, expected YYYY-MM-DD")
@@ -215,15 +243,39 @@ func (s *ReportService) GetSalesByCategoryReport(startDateStr, endDateStr string
 		return nil, errors.New("start date cannot be after end date")
 	}
 
-	// Placeholder implementation - would fetch actual data in a complete implementation
-	salesByCategory := []map[string]interface{}{}
+	// Calculate end of the end date (23:59:59)
+	endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 0, endDate.Location())
+
+	// Get sales by category breakdown
+	salesByCategory, err := s.queries.GetSalesByCategoryByDateRange(context.Background(), db.GetSalesByCategoryByDateRangeParams{
+		Column1: startDate,
+		Column2: endOfDay,
+	})
+	if err != nil && err != sql.ErrNoRows {
+		return nil, fmt.Errorf("failed to fetch sales by category: %v", err)
+	}
+
+	salesByCategoryList := make([]map[string]interface{}, 0)
+	for _, category := range salesByCategory {
+		totalRevenue, err := decimal.NewFromString(category.TotalRevenue)
+		if err != nil {
+			continue // Skip invalid entries
+		}
+
+		salesByCategoryList = append(salesByCategoryList, map[string]interface{}{
+			"category_name":   category.CategoryName,
+			"items_sold":      int(category.ItemsSold),
+			"total_quantity":  int(category.TotalQuantity),
+			"total_revenue":   types.FromDecimal(totalRevenue),
+		})
+	}
 
 	report := map[string]interface{}{
 		"period": map[string]string{
 			"start_date": startDateStr,
 			"end_date":   endDateStr,
 		},
-		"sales_by_category": salesByCategory,
+		"sales_by_category": salesByCategoryList,
 	}
 
 	return &types.APIResponse{
@@ -236,7 +288,7 @@ func (s *ReportService) GetSalesByCategoryReport(startDateStr, endDateStr string
 func (s *ReportService) GetTopSellingItemsReport(startDateStr, endDateStr string, limit int) (*types.APIResponse, error) {
 	// This would fetch the most sold items by quantity in the given date range
 	// For now, we'll return a placeholder implementation
-	
+
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
 		return nil, errors.New("invalid start date format, expected YYYY-MM-DD")
@@ -255,8 +307,32 @@ func (s *ReportService) GetTopSellingItemsReport(startDateStr, endDateStr string
 		limit = 10 // Default limit
 	}
 
-	// Placeholder implementation - would fetch actual data in a complete implementation
-	topSellingItems := []map[string]interface{}{}
+	// Calculate end of the end date (23:59:59)
+	endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 0, endDate.Location())
+
+	// Get top selling items by date range
+	topSellingItemsData, err := s.queries.GetTopSellingItemsByDateRange(context.Background(), db.GetTopSellingItemsByDateRangeParams{
+		Column1: startDate,
+		Column2: endOfDay,
+		Limit:   int32(limit),
+	})
+	if err != nil && err != sql.ErrNoRows {
+		return nil, fmt.Errorf("failed to fetch top selling items: %v", err)
+	}
+
+	topSellingItems := make([]map[string]interface{}, 0)
+	for _, item := range topSellingItemsData {
+		totalRevenue, err := decimal.NewFromString(item.TotalRevenue)
+		if err != nil {
+			continue // Skip invalid entries
+		}
+
+		topSellingItems = append(topSellingItems, map[string]interface{}{
+			"menu_item_name":      item.MenuItemName,
+			"total_quantity_sold": int(item.TotalQuantitySold),
+			"total_revenue":       types.FromDecimal(totalRevenue),
+		})
+	}
 
 	report := map[string]interface{}{
 		"period": map[string]string{
