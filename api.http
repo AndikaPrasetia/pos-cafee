@@ -3,8 +3,9 @@
 # @version 1.0.0
 # @description POS app for a small cafe
 
-@baseUrl = http://localhost:8080
+# @baseUrl = http://localhost:8081
 @contentType = application/json
+@baseUrl = environmental-biddy-washoe-8812f0c5.koyeb.app
 
 ### Variables
 # These variables will be populated by successful requests
@@ -122,8 +123,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "name": "Coffee",
-  "description": "Minuman kopi berbagai jenis"
+  "name": "Peyeum",
+  "description": "Peyeum bandung"
 }
 
 ### Delete Menu
@@ -279,7 +280,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 GET {{baseUrl}}/api/reports/daily-sales
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
-?date=2025-11-10
+?date=2025-11-12
 
 ### Financial Summary Report
 GET {{baseUrl}}/api/reports/financial-summary

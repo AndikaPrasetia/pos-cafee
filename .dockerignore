@@ -1,0 +1,56 @@
+# Dependencies
+vendor/
+
+# Build outputs
+*.o
+*.a
+*.so
+*.exe
+*.out
+*.test
+*.prof
+_coverage/
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+server.log
+
+# Environment
+.env
+.env.local
+.env.production
+.env.test
+
+# Documentation
+*.md
+!README.md
+
+# Database
+*.db
+*.db-journal
+
+# Config management
+*.yml
+!docker-compose.yml
+!sqlc.yaml
+
+# Project notes
+.markdowns/
+
+# Binaries
+bin/
