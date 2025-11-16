@@ -7,18 +7,18 @@ WHERE dss.sale_date = $1::date;
 
 -- name: GetTopSellingItemsByDateRange :many
 SELECT
-    tsi.menu_item_name,
-    tsi.total_quantity_sold,
-    tsi.total_revenue::TEXT AS total_revenue
-FROM top_selling_items tsi
-JOIN order_items oi ON tsi.menu_item_id = oi.menu_item_id
+    mi.name AS menu_item_name,
+    SUM(oi.quantity) AS total_quantity_sold,
+    SUM(oi.total_price)::TEXT AS total_revenue
+FROM order_items oi
 JOIN orders o ON oi.order_id = o.id
+JOIN menu_items mi ON oi.menu_item_id = mi.id
 WHERE o.status = 'completed'
 AND o.completed_at IS NOT NULL
 AND o.completed_at >= $1::timestamp
 AND o.completed_at <= $2::timestamp
-GROUP BY tsi.menu_item_id, tsi.menu_item_name, tsi.total_quantity_sold, tsi.total_revenue
-ORDER BY tsi.total_quantity_sold DESC
+GROUP BY mi.id, mi.name
+ORDER BY total_quantity_sold DESC
 LIMIT $3;
 
 -- name: GetFinancialSummaryByDateRange :one
