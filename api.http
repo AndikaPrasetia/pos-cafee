@@ -12,12 +12,15 @@
 
 ############################################## AUTH  ######
 
+GET {{baseUrl}}/health
+Content-Type: {{contentType}}
+
 ### Register
 POST {{baseUrl}}/api/auth/register
 Content-Type: {{contentType}}
 
 {
-  "username": "kasir",
+  "username": "mimin",
   "email": "kasir@test.com",
   "password": "@Dm!n123",
   "role": "cashier",
@@ -31,8 +34,8 @@ POST {{baseUrl}}/api/auth/login
 Content-Type: {{contentType}}
 
 {
-  "username": "manager",
-  "password": "Newp@ssword123!"
+  "username": "maman",
+  "password": "@Dm!n123"
 }
 
 ### Logout
@@ -52,7 +55,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
   "current_password": "@Dm!n123",
-  "new_password": "Newp@ssword123!"
+  "new_password": "@dmIn234"
 }
 
 ############################################ CATEGORY  #####

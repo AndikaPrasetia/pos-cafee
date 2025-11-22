@@ -70,16 +70,17 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.prod
+    image: andikaprasetia/pos-cafee-server:v2.0.0
     ports:
       - "8081:8080"
     environment:
       # Using connection string approach for Neon
-      - DATABASE_URL=postgresql://neondb_owner:npg_8CpxhfBNdo7e@ep-orange-union-a1y8j1g0-pooler.ap-southeast-1.aws.neon.tech:5432/pos_cafee?sslmode=require
+      - DATABASE_URL=postgresql://neondb_owner:npg_37yfWnhmMUAS@ep-spring-mode-agdpjosr-pooler.c-2.eu-central-1.aws.neon.tech/pos_cafe?sslmode=require&channel_binding=require
       - PORT=8080
-      - JWT_SECRET=supersecretjwtkey
+      - JWT_SECRET=0Eksi3osk#s0@slk124jslkjd0J#JSKDj8#
       - JWT_EXPIRY=24h
       - ENVIRONMENT=production
     restart: unless-stopped
