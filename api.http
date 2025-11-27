@@ -76,22 +76,22 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Categories by ID
-GET {{baseUrl}}/api/menu/categories/5a9d97c9-f5c3-4e8d-b7bb-620bf9cdc283
+GET {{baseUrl}}/api/menu/categories/5b1a7fe6-074d-4c7c-9fc5-8ccae6a2bed6
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Categories
-PUT {{baseUrl}}/api/menu/categories/03e434fa-e2b6-459e-99e3-a3de523353d8
+PUT {{baseUrl}}/api/menu/categories/5b1a7fe6-074d-4c7c-9fc5-8ccae6a2bed6
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "name": "Meal",
+  "name": "Meal hapus",
   "description": "Makanan berat"
 }
 
 ### Delete Categories
-DELETE {{baseUrl}}/api/menu/categories/1a129b98-8237-49ed-8722-cdc253f53bb9
+DELETE {{baseUrl}}/api/menu/categories/5b1a7fe6-074d-4c7c-9fc5-8ccae6a2bed6
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -116,12 +116,12 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Menu by ID
-GET {{baseUrl}}/api/menu/items/8f43ed81-69e9-43f0-9d17-f6c4a19340fb
+GET {{baseUrl}}/api/menu/items/37e080d8-258b-49ff-add1-824c4a9c062a
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Menu
-PUT {{baseUrl}}/api/menu/items/8f43ed81-69e9-43f0-9d17-f6c4a19340fb
+PUT {{baseUrl}}/api/menu/items/37e080d8-258b-49ff-add1-824c4a9c062a
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -131,7 +131,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Delete Menu
-DELETE {{baseUrl}}/api/menu/items/26b1b3d8-278d-4214-816f-484233896756
+DELETE {{baseUrl}}/api/menu/items/37e080d8-258b-49ff-add1-824c4a9c062a
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -156,7 +156,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Order
-GET {{baseUrl}}/api/orders/ddc2b321-6eec-41ab-8afc-d7ecfc0c9f81
+GET {{baseUrl}}/api/orders/fd97643f-dd2f-4eee-b5a9-3156d380b0a5
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -166,7 +166,7 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Order Payment
-PUT {{baseUrl}}/api/orders/ddc2b321-6eec-41ab-8afc-d7ecfc0c9f81/complete
+PUT {{baseUrl}}/api/orders/fd97643f-dd2f-4eee-b5a9-3156d380b0a5/complete
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -176,7 +176,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Cancel Order
-PUT {{baseUrl}}/api/orders/8018bfaf-6fb9-43f9-bbe2-317d7b91af9c/cancel
+PUT {{baseUrl}}/api/orders/fd97643f-dd2f-4eee-b5a9-3156d380b0a5/cancel
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
