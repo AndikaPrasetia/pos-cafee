@@ -1,9 +1,12 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/AndikaPrasetia/pos-cafee/internal/cache"
 	"github.com/AndikaPrasetia/pos-cafee/internal/models"
 	"github.com/AndikaPrasetia/pos-cafee/internal/repositories"
 	"github.com/AndikaPrasetia/pos-cafee/pkg/types"
@@ -14,13 +17,15 @@ import (
 type MenuService struct {
 	menuRepo      repositories.MenuRepo
 	inventoryRepo repositories.InventoryRepo
+	cache         cache.Cache
 }
 
 // NewMenuService creates a new menu service
-func NewMenuService(menuRepo repositories.MenuRepo, inventoryRepo repositories.InventoryRepo) *MenuService {
+func NewMenuService(menuRepo repositories.MenuRepo, inventoryRepo repositories.InventoryRepo, cache cache.Cache) *MenuService {
 	return &MenuService{
 		menuRepo:      menuRepo,
 		inventoryRepo: inventoryRepo,
+		cache:         cache,
 	}
 }
 
@@ -59,9 +64,32 @@ func (s *MenuService) GetCategory(id string) (*types.APIResponse, error) {
 
 // ListCategories retrieves a list of categories
 func (s *MenuService) ListCategories(isActive bool, limit, offset int) (*types.APIResponse, error) {
-	categories, err := s.menuRepo.ListCategories(isActive, limit, offset)
+	// Create cache key
+	cacheKey := fmt.Sprintf("categories:active:%t:limit:%d:offset:%d", isActive, limit, offset)
+
+	// Try to get from cache first
+	var categories []*models.Category
+	ctx := context.Background()
+	err := s.cache.GetJSON(ctx, cacheKey, &categories)
+	if err == nil {
+		// Cache hit - return cached data
+		return &types.APIResponse{
+			Success: true,
+			Data:    categories,
+		}, nil
+	}
+
+	// Cache miss - get from database
+	categories, err = s.menuRepo.ListCategories(isActive, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list categories: %v", err)
+	}
+
+	// Cache the results for 15 minutes
+	cacheErr := s.cache.SetJSON(ctx, cacheKey, categories, 15*time.Minute)
+	if cacheErr != nil {
+		// Log the error but don't fail the request
+		fmt.Printf("Warning: Failed to cache categories: %v\n", cacheErr)
 	}
 
 	return &types.APIResponse{
@@ -163,9 +191,32 @@ func (s *MenuService) GetMenuItem(id string) (*types.APIResponse, error) {
 
 // ListMenuItems retrieves a list of menu items
 func (s *MenuService) ListMenuItems(isAvailable bool, limit, offset int) (*types.APIResponse, error) {
-	items, err := s.menuRepo.ListMenuItems(isAvailable, limit, offset)
+	// Create cache key
+	cacheKey := fmt.Sprintf("menu_items:available:%t:limit:%d:offset:%d", isAvailable, limit, offset)
+
+	// Try to get from cache first
+	var items []*models.MenuItem
+	ctx := context.Background()
+	err := s.cache.GetJSON(ctx, cacheKey, &items)
+	if err == nil {
+		// Cache hit - return cached data
+		return &types.APIResponse{
+			Success: true,
+			Data:    items,
+		}, nil
+	}
+
+	// Cache miss - get from database
+	items, err = s.menuRepo.ListMenuItems(isAvailable, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list menu items: %v", err)
+	}
+
+	// Cache the results for 15 minutes
+	cacheErr := s.cache.SetJSON(ctx, cacheKey, items, 15*time.Minute)
+	if cacheErr != nil {
+		// Log the error but don't fail the request
+		fmt.Printf("Warning: Failed to cache menu items: %v\n", cacheErr)
 	}
 
 	return &types.APIResponse{
@@ -181,9 +232,32 @@ func (s *MenuService) ListMenuItemsByCategory(categoryID string, limit, offset i
 		return nil, errors.New("invalid category ID")
 	}
 
-	items, err := s.menuRepo.ListMenuItemsByCategory(categoryID, limit, offset)
+	// Create cache key
+	cacheKey := fmt.Sprintf("menu_items:category:%s:limit:%d:offset:%d", categoryID, limit, offset)
+
+	// Try to get from cache first
+	var items []*models.MenuItem
+	ctx := context.Background()
+	err = s.cache.GetJSON(ctx, cacheKey, &items)
+	if err == nil {
+		// Cache hit - return cached data
+		return &types.APIResponse{
+			Success: true,
+			Data:    items,
+		}, nil
+	}
+
+	// Cache miss - get from database
+	items, err = s.menuRepo.ListMenuItemsByCategory(categoryID, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list menu items by category: %v", err)
+	}
+
+	// Cache the results for 15 minutes
+	cacheErr := s.cache.SetJSON(ctx, cacheKey, items, 15*time.Minute)
+	if cacheErr != nil {
+		// Log the error but don't fail the request
+		fmt.Printf("Warning: Failed to cache menu items by category: %v\n", cacheErr)
 	}
 
 	return &types.APIResponse{

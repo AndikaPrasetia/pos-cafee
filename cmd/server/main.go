@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/AndikaPrasetia/pos-cafee/internal/cache"
 	"github.com/AndikaPrasetia/pos-cafee/internal/config"
 	"github.com/AndikaPrasetia/pos-cafee/internal/handlers"
 	"github.com/AndikaPrasetia/pos-cafee/internal/middleware"
@@ -17,7 +18,7 @@ import (
 func main() {
 	// Initialize logger
 	utils.InitLogger()
-	
+
 	// Load configuration
 	cfg := config.LoadConfig()
 
@@ -32,16 +33,23 @@ func main() {
 	db := config.ConnectDB(cfg)
 	defer config.CloseDB(db)
 
+	// Initialize Redis connection
+	rdb := config.RedisClient(cfg)
+	defer config.CloseRedis(rdb)
+
+	// Initialize cache
+	cacheClient := cache.NewRedisCache(rdb)
+
 	// Initialize repositories
 	repo := repositories.NewRepository(db)
 
 	// Initialize services
 	authService := services.NewAuthService(repo.UserRepo, cfg.JWTSecret, parseDuration(cfg.JWTExpiry))
-	menuService := services.NewMenuService(repo.MenuRepo, repo.InventoryRepo)
+	menuService := services.NewMenuService(repo.MenuRepo, repo.InventoryRepo, cacheClient)
 	orderService := services.NewOrderService(repo.OrderRepo, repo.OrderItemRepo, repo.MenuRepo, repo.InventoryRepo, repo.StockTransactionRepo)
 	inventoryService := services.NewInventoryService(repo.InventoryRepo, repo.StockTransactionRepo, repo.MenuRepo)
 	expenseService := services.NewExpenseService(repo.ExpenseRepo)
-	reportService := services.NewReportService(repo.OrderRepo, repo.MenuRepo, repo.InventoryRepo, repo.ExpenseRepo, repo.Queries)
+	reportService := services.NewReportService(repo.OrderRepo, repo.MenuRepo, repo.InventoryRepo, repo.ExpenseRepo, repo.Queries, cacheClient)
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService)

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/AndikaPrasetia/pos-cafee/internal/cache"
 	"github.com/AndikaPrasetia/pos-cafee/internal/db"
 	"github.com/AndikaPrasetia/pos-cafee/internal/repositories"
 	"github.com/AndikaPrasetia/pos-cafee/pkg/types"
@@ -20,6 +21,7 @@ type ReportService struct {
 	inventoryRepo repositories.InventoryRepo
 	expenseRepo   repositories.ExpenseRepo
 	queries       *db.Queries
+	cache         cache.Cache
 }
 
 // NewReportService creates a new report service
@@ -29,6 +31,7 @@ func NewReportService(
 	inventoryRepo repositories.InventoryRepo,
 	expenseRepo repositories.ExpenseRepo,
 	queries *db.Queries,
+	cache cache.Cache,
 ) *ReportService {
 	return &ReportService{
 		orderRepo:     orderRepo,
@@ -36,6 +39,7 @@ func NewReportService(
 		inventoryRepo: inventoryRepo,
 		expenseRepo:   expenseRepo,
 		queries:       queries,
+		cache:         cache,
 	}
 }
 
@@ -44,6 +48,21 @@ func (s *ReportService) GetDailySalesReport(dateStr string) (*types.APIResponse,
 	reportDate, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
 		return nil, errors.New("invalid date format, expected YYYY-MM-DD")
+	}
+
+	// Create cache key
+	cacheKey := fmt.Sprintf("daily_sales_report:%s", dateStr)
+
+	// Try to get from cache first
+	var cachedReport map[string]interface{}
+	ctx := context.Background()
+	err = s.cache.GetJSON(ctx, cacheKey, &cachedReport)
+	if err == nil {
+		// Cache hit - return cached data
+		return &types.APIResponse{
+			Success: true,
+			Data:    cachedReport,
+		}, nil
 	}
 
 	// Use the database view to get daily sales data
@@ -57,6 +76,13 @@ func (s *ReportService) GetDailySalesReport(dateStr string) (*types.APIResponse,
 				"total_sales":         types.DecimalText(decimal.Zero),
 				"average_order_value": types.DecimalText(decimal.Zero),
 				"top_selling_items":   []map[string]interface{}{},
+			}
+
+			// Cache the results for 1 hour (reports typically don't change frequently)
+			cacheErr := s.cache.SetJSON(ctx, cacheKey, report, time.Hour)
+			if cacheErr != nil {
+				// Log the error but don't fail the request
+				fmt.Printf("Warning: Failed to cache daily sales report: %v\n", cacheErr)
 			}
 
 			return &types.APIResponse{
@@ -115,6 +141,13 @@ func (s *ReportService) GetDailySalesReport(dateStr string) (*types.APIResponse,
 		"total_sales":         types.FromDecimal(totalSales),
 		"average_order_value": averageOrderValue,
 		"top_selling_items":   topItems,
+	}
+
+	// Cache the results for 1 hour (reports typically don't change frequently)
+	cacheErr := s.cache.SetJSON(ctx, cacheKey, report, time.Hour)
+	if cacheErr != nil {
+		// Log the error but don't fail the request
+		fmt.Printf("Warning: Failed to cache daily sales report: %v\n", cacheErr)
 	}
 
 	return &types.APIResponse{
@@ -307,6 +340,21 @@ func (s *ReportService) GetTopSellingItemsReport(startDateStr, endDateStr string
 		limit = 10 // Default limit
 	}
 
+	// Create cache key
+	cacheKey := fmt.Sprintf("top_selling_items:from:%s:to:%s:limit:%d", startDateStr, endDateStr, limit)
+
+	// Try to get from cache first
+	var cachedReport map[string]interface{}
+	ctx := context.Background()
+	err = s.cache.GetJSON(ctx, cacheKey, &cachedReport)
+	if err == nil {
+		// Cache hit - return cached data
+		return &types.APIResponse{
+			Success: true,
+			Data:    cachedReport,
+		}, nil
+	}
+
 	// Calculate end of the end date (23:59:59)
 	endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 0, endDate.Location())
 
@@ -341,6 +389,13 @@ func (s *ReportService) GetTopSellingItemsReport(startDateStr, endDateStr string
 		},
 		"top_selling_items": topSellingItems,
 		"limit":             limit,
+	}
+
+	// Cache the results for 30 minutes
+	cacheErr := s.cache.SetJSON(ctx, cacheKey, report, 30*time.Minute)
+	if cacheErr != nil {
+		// Log the error but don't fail the request
+		fmt.Printf("Warning: Failed to cache top selling items report: %v\n", cacheErr)
 	}
 
 	return &types.APIResponse{

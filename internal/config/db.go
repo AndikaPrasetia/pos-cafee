@@ -1,9 +1,11 @@
 package config
 
 import (
+	"context"
 	"database/sql"
 	"log"
 
+	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
 )
 
@@ -32,6 +34,34 @@ func CloseDB(db *sql.DB) {
 	if db != nil {
 		if err := db.Close(); err != nil {
 			log.Printf("Error closing database connection: %v", err)
+		}
+	}
+}
+
+// RedisClient creates and returns a Redis client
+func RedisClient(config *AppConfig) *redis.Client {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     config.Redis.Host + ":" + config.Redis.Port,
+		Password: config.Redis.Password,
+		DB:       config.Redis.DB,
+	})
+
+	// Test the connection
+	ctx := context.Background()
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		log.Printf("Failed to connect to Redis: %v", err)
+		return nil
+	}
+
+	log.Println("Successfully connected to Redis")
+	return rdb
+}
+
+// CloseRedis closes the Redis client connection
+func CloseRedis(rdb *redis.Client) {
+	if rdb != nil {
+		if err := rdb.Close(); err != nil {
+			log.Printf("Error closing Redis connection: %v", err)
 		}
 	}
 }

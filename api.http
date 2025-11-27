@@ -3,9 +3,9 @@
 # @version 1.0.0
 # @description POS app for a small cafe
 
-# @baseUrl = http://localhost:8081
+@baseUrl = http://localhost:8081
 @contentType = application/json
-@baseUrl = environmental-biddy-washoe-8812f0c5.koyeb.app
+# @baseUrl = environmental-biddy-washoe-8812f0c5.koyeb.app
 
 ### Variables
 # These variables will be populated by successful requests
@@ -35,7 +35,7 @@ Content-Type: {{contentType}}
 
 {
   "username": "maman",
-  "password": "@Dm!n123"
+  "password": "@dmIn234"
 }
 
 ### Logout
@@ -71,23 +71,23 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "name": "Coffee",
-  "description": "Minuman kopi berbagai jenis"
+  "name": "kohi",
+  "description": "Minuman kohi berbagai jenis"
 }
 
 ### Get Categories by ID
-GET {{baseUrl}}/api/menu/categories/3f9ddca6-d2ed-4021-9aa2-50fb3f205e1f
+GET {{baseUrl}}/api/menu/categories/5a9d97c9-f5c3-4e8d-b7bb-620bf9cdc283
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Categories
-PUT {{baseUrl}}/api/menu/categories/a6ed9823-af54-49c3-a64e-65e97ce0c3eb
+PUT {{baseUrl}}/api/menu/categories/03e434fa-e2b6-459e-99e3-a3de523353d8
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "name": "Coffee",
-  "description": "Minuman kopi berbagai jenis"
+  "name": "Meal",
+  "description": "Makanan berat"
 }
 
 ### Delete Categories
@@ -108,20 +108,20 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-      "name": "Chicken Pasta",
-      "category_id": "3f9ddca6-d2ed-4021-9aa2-50fb3f205e1f",
-      "description": "Pasta dengan saus cream dan ayam",
-      "price": "40000",
-      "cost": "18000"
+      "name": "Americano",
+      "category_id": "5a9d97c9-f5c3-4e8d-b7bb-620bf9cdc283",
+      "description": "America NO!",
+      "price": "4000",
+      "cost": "2000"
 }
 
 ### Get Menu by ID
-GET {{baseUrl}}/api/menu/items/a2bea4ee-3a9b-4857-b6b6-1615570eb43d
+GET {{baseUrl}}/api/menu/items/8f43ed81-69e9-43f0-9d17-f6c4a19340fb
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
-### Create Menu
-PUT {{baseUrl}}/api/menu/items/a6ed9823-af54-49c3-a64e-65e97ce0c3eb
+### Update Menu
+PUT {{baseUrl}}/api/menu/items/8f43ed81-69e9-43f0-9d17-f6c4a19340fb
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -145,18 +145,18 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 {
   "items": [
     {
-      "menu_item_id": "bbe182a5-e2cd-4327-b4b7-57cc04dafa64",
+      "menu_item_id": "a40906c4-7bf7-41d0-aa9d-36210b291323",
       "quantity": 2
     },
     {
-      "menu_item_id": "f03f077b-9f17-4794-9ee6-283b96fcda74",
+      "menu_item_id": "f2e4a084-2c2f-4bfd-b8fa-5f641d4f1390",
       "quantity": 2
     }
   ]
 }
 
 ### Get Order
-GET {{baseUrl}}/api/orders/c125436a-78ac-4508-b6e4-b95e82974cb5
+GET {{baseUrl}}/api/orders/ddc2b321-6eec-41ab-8afc-d7ecfc0c9f81
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -166,7 +166,7 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Order Payment
-PUT {{baseUrl}}/api/orders/e32ee1cc-c8fe-445a-ab22-d70b9303ff43/complete
+PUT {{baseUrl}}/api/orders/ddc2b321-6eec-41ab-8afc-d7ecfc0c9f81/complete
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -212,8 +212,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "menu_item_id": "f03f077b-9f17-4794-9ee6-283b96fcda74",
-  "quantity": 1,
+  "menu_item_id": "f2e4a084-2c2f-4bfd-b8fa-5f641d4f1390",
+  "quantity": 12,
   "reason": "Restock from supplier"
 }
 
@@ -283,7 +283,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 GET {{baseUrl}}/api/reports/daily-sales
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
-?date=2025-11-12
+?date=2025-11-27
 
 ### Financial Summary Report
 GET {{baseUrl}}/api/reports/financial-summary
