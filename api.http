@@ -3,9 +3,9 @@
 # @version 1.0.0
 # @description POS app for a small cafe
 
-@baseUrl = http://localhost:8081
+# @baseUrl = http://localhost:8081
 @contentType = application/json
-# @baseUrl = environmental-biddy-washoe-8812f0c5.koyeb.app
+@baseUrl = environmental-biddy-washoe-8812f0c5.koyeb.app
 
 ### Variables
 # These variables will be populated by successful requests
@@ -76,12 +76,12 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Categories by ID
-GET {{baseUrl}}/api/menu/categories/5b1a7fe6-074d-4c7c-9fc5-8ccae6a2bed6
+GET {{baseUrl}}/api/menu/categories/66187e88-2816-4a45-9d92-fd8b41c17767
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Categories
-PUT {{baseUrl}}/api/menu/categories/5b1a7fe6-074d-4c7c-9fc5-8ccae6a2bed6
+PUT {{baseUrl}}/api/menu/categories/66187e88-2816-4a45-9d92-fd8b41c17767
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -91,7 +91,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Delete Categories
-DELETE {{baseUrl}}/api/menu/categories/5b1a7fe6-074d-4c7c-9fc5-8ccae6a2bed6
+DELETE {{baseUrl}}/api/menu/categories/66187e88-2816-4a45-9d92-fd8b41c17767
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -116,12 +116,12 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Menu by ID
-GET {{baseUrl}}/api/menu/items/37e080d8-258b-49ff-add1-824c4a9c062a
+GET {{baseUrl}}/api/menu/items/1951954e-d97d-4d1f-95ff-65afc4a3b6ea
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Menu
-PUT {{baseUrl}}/api/menu/items/37e080d8-258b-49ff-add1-824c4a9c062a
+PUT {{baseUrl}}/api/menu/items/1951954e-d97d-4d1f-95ff-65afc4a3b6ea
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -131,7 +131,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Delete Menu
-DELETE {{baseUrl}}/api/menu/items/37e080d8-258b-49ff-add1-824c4a9c062a
+DELETE {{baseUrl}}/api/menu/items/8f43ed81-69e9-43f0-9d17-f6c4a19340fb
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -146,17 +146,17 @@ Authorization: Bearer {{login.response.body.$.data.token}}
   "items": [
     {
       "menu_item_id": "a40906c4-7bf7-41d0-aa9d-36210b291323",
-      "quantity": 2
+      "quantity": 1
     },
     {
       "menu_item_id": "f2e4a084-2c2f-4bfd-b8fa-5f641d4f1390",
-      "quantity": 2
+      "quantity": 1
     }
   ]
 }
 
 ### Get Order
-GET {{baseUrl}}/api/orders/fd97643f-dd2f-4eee-b5a9-3156d380b0a5
+GET {{baseUrl}}/api/orders/39d3b84e-f98d-45a8-9756-4a95ff94df87
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -166,7 +166,7 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Order Payment
-PUT {{baseUrl}}/api/orders/fd97643f-dd2f-4eee-b5a9-3156d380b0a5/complete
+PUT {{baseUrl}}/api/orders/39d3b84e-f98d-45a8-9756-4a95ff94df87/complete
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -221,7 +221,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 GET {{baseUrl}}/api/inventory/transactions
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
-?menu_item_id=f03f077b-9f17-4794-9ee6-283b96fcda74
+?menu_item_id=988adff5-ef83-4ba1-81e2-897714bdd766
 &limit=50
 &offset=0
 
@@ -240,7 +240,7 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Expense
-GET {{baseUrl}}/api/expenses/b0ca6c64-6530-4f11-a9c4-0b0bd0b11832
+GET {{baseUrl}}/api/expenses/4487cf9b-ca18-48af-9955-cbf7355dbe99
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -248,21 +248,21 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 GET {{baseUrl}}/api/expenses/
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
-?start_date=2025-10-01
-&end_date=2025-10-31
+?start_date=2025-11-01
+&end_date=2025-11-30
 &category=Office Supplies
 &limit=10
 &offset=0
 
 ### Update Expense
-PUT {{baseUrl}}/api/expenses/b0ca6c64-6530-4f11-a9c4-0b0bd0b11832
+PUT {{baseUrl}}/api/expenses/4487cf9b-ca18-48af-9955-cbf7355dbe99
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
   "category": "Office Supplies",
   "amount": "75000",
-  "date": "2025-10-16T00:00:00Z"
+  "date": "2025-11-28T00:00:00Z"
 }
 
 ### Delete Expense

@@ -1,70 +1,3 @@
-# version: '3.8'
-#
-# services:
-#   app:
-#     build:
-#       context: .
-#       dockerfile: Dockerfile.prod
-#     ports:
-#       - "8081:8080"
-#     environment:
-#       - DB_HOST=ep-orange-union-a1y8j1g0-pooler.ap-southeast-1.aws.neon.tech
-#       - DB_PORT=5432
-#       - DB_USER=neondb_owner
-#       - DB_PASSWORD=npg_8CpxhfBNdo7e
-#       - DB_NAME=pos_cafe
-#  # Opsi 2 (Direkomendasikan): Gunakan Connection String langsung
-#       - DATABASE_URL=postgresql://neondb_owner:npg_8CpxhfBNdo7e@ep-orange-union-a1y8j1g0-pooler.ap-southeast-1.aws.neon.tech:5432/pos_cafe?sslmode=require
-#       - PORT=8080
-#       - JWT_SECRET=supersecretjwtkey
-#       - JWT_EXPIRY=24h
-#       - ENVIRONMENT=production
-#     depends_on:
-#       - postgres
-#     restart: unless-stopped
-#     networks:
-#       - pos_network
-#
-# # Application Configuration
-#   # postgres:
-#   #   image: postgres:15-alpine
-#   #   environment:
-#   #     - POSTGRES_DB=pos_cafe
-#   #     - POSTGRES_USER=postgres
-#   #     - POSTGRES_PASSWORD=postgres
-#   #   ports:
-#   #     - "5433:5432"
-#   #   volumes:
-#   #     - postgres_data:/var/lib/postgresql/data
-#   #     - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # if you have initialization scripts
-#   #   restart: unless-stopped
-#   #   networks:
-#   #     - pos_network
-#   #   command: >
-#   #     postgres
-#   #     -c max_connections=200
-#   #     -c shared_buffers=128MB
-#   #     -c effective_cache_size=4GB
-#   #     -c maintenance_work_mem=64MB
-#   #     -c checkpoint_completion_target=0.9
-#   #     -c wal_buffers=16MB
-#   #     -c default_statistics_target=100
-#   #     -c random_page_cost=1.1
-#   #     -c effective_io_concurrency=200
-#   #     -c work_mem=4MB
-#   #     -c min_wal_size=1GB
-#   #     -c max_wal_size=4GB
-#   #     -c max_worker_processes=2
-#   #     -c max_parallel_workers_per_gather=1
-#   #     -c max_parallel_workers=2
-#   #     -c max_parallel_maintenance_workers=1
-#
-# volumes:
-#   postgres_data:
-#
-# networks:
-#   pos_network:
-#     driver: bridge
 
 version: '3.8'
 
@@ -78,9 +11,8 @@ services:
     environment:
       # Using connection string approach for Neon
       - DATABASE_URL=postgresql://neondb_owner:npg_37yfWnhmMUAS@ep-spring-mode-agdpjosr-pooler.c-2.eu-central-1.aws.neon.tech/pos_cafe?sslmode=require&channel_binding=require
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_DB=0
+      # For Render deployment, use REDIS_URL (format: redis://username:password@host:port or rediss:// for SSL)
+      - REDIS_URL=rediss://red-d4khn9k9c44c73ev9qo0:9yMrTdZtZ7iGkcmDYtb2uslcsWmC13OJ@frankfurt-keyvalue.render.com:6379
       - PORT=8080
       - JWT_SECRET=0Eksi3osk#s0@slk124jslkjd0J#JSKDj8#
       - JWT_EXPIRY=24h
@@ -88,22 +20,6 @@ services:
     restart: unless-stopped
     networks:
       - pos_network
-    depends_on:
-      - redis
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6380:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-    restart: unless-stopped
-    networks:
-      - pos_network
-
-volumes:
-  redis_data:
 
 networks:
   pos_network:

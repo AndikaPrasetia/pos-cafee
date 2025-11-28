@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
@@ -23,10 +22,7 @@ type DBConfig struct {
 
 // RedisConfig holds Redis configuration
 type RedisConfig struct {
-	Host     string
-	Port     string
-	Password string
-	DB       int
+	URL string
 }
 
 // AppConfig holds application configuration
@@ -55,9 +51,7 @@ func LoadConfig() *AppConfig {
 	viper.SetDefault("DB_HOST", "localhost")
 	viper.SetDefault("DB_PORT", "5432")
 	viper.SetDefault("DB_SSL_MODE", "disable")
-	viper.SetDefault("REDIS_HOST", "localhost")
-	viper.SetDefault("REDIS_PORT", "6379")
-	viper.SetDefault("REDIS_DB", "0")
+	viper.SetDefault("REDIS_URL", "")
 
 	// Read configuration from environment variables
 	viper.AutomaticEnv()
@@ -79,10 +73,7 @@ func LoadConfig() *AppConfig {
 			URL:      getEnv("DATABASE_URL", ""),
 		},
 		Redis: RedisConfig{
-			Host:     getEnv("REDIS_HOST", "localhost"),
-			Port:     getEnv("REDIS_PORT", "6379"),
-			Password: getEnv("REDIS_PASSWORD", ""),
-			DB:       getEnvAsInt("REDIS_DB", 0),
+			URL: getEnv("REDIS_URL", ""),
 		},
 	}
 
@@ -103,12 +94,3 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-// getEnvAsInt retrieves environment variable as integer or returns default value
-func getEnvAsInt(key string, defaultValue int) int {
-	if value := os.Getenv(key); value != "" {
-		if intValue, err := strconv.Atoi(value); err == nil {
-			return intValue
-		}
-	}
-	return defaultValue
-}

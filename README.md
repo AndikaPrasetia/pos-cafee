@@ -149,6 +149,27 @@ The application is configured using environment variables. Key settings include:
 - `ENVIRONMENT`: Environment mode ("development", "production")
 - `JWT_SECRET`: Secret key for JWT token signing
 - `JWT_EXPIRY`: JWT token expiry duration
+- `REDIS_URL`: Redis connection URL for caching (format: redis://host:port or rediss:// for SSL)
+
+## 🗄️ Redis Configuration
+
+The application uses Redis for caching frequently accessed data like menu items, categories, and reports.
+
+### Local Development
+For local development, you can set up Redis one of these ways:
+
+1. **Using a local Redis server**:
+   - Install Redis locally and start the service
+   - Set REDIS_URL to your local Redis instance, e.g., `redis://localhost:6379`
+
+2. **Using Redis provided by Docker Compose** (if you add it back):
+   - Run Redis in a Docker container alongside the app
+   - Set REDIS_URL to point to the Redis container, e.g., `redis://redis:6379`
+
+### Production Deployment
+For production deployment on Render or similar platforms:
+- Obtain your Redis URL from your Redis service provider
+- Set the REDIS_URL environment variable to your Redis URL in your deployment settings
 
 ## 🔐 Security Features
 
