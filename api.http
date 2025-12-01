@@ -76,22 +76,22 @@ Authorization: Bearer {{login.response.body.$.data.token}}
 }
 
 ### Get Categories by ID
-GET {{baseUrl}}/api/menu/categories/66187e88-2816-4a45-9d92-fd8b41c17767
+GET {{baseUrl}}/api/menu/categories/77160e80-bc24-4459-93e0-7c684861ec0b
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Categories
-PUT {{baseUrl}}/api/menu/categories/66187e88-2816-4a45-9d92-fd8b41c17767
+PUT {{baseUrl}}/api/menu/categories/5a9d97c9-f5c3-4e8d-b7bb-620bf9cdc283
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "name": "Meal hapus",
-  "description": "Makanan berat"
+  "name": "Coffee",
+  "description": "Minuman kopi berbagai jenis"
 }
 
 ### Delete Categories
-DELETE {{baseUrl}}/api/menu/categories/66187e88-2816-4a45-9d92-fd8b41c17767
+DELETE {{baseUrl}}/api/menu/categories/77160e80-bc24-4459-93e0-7c684861ec0b
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
@@ -108,26 +108,26 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-      "name": "Americano",
+      "name": "Bandrek & Bajigur",
       "category_id": "5a9d97c9-f5c3-4e8d-b7bb-620bf9cdc283",
-      "description": "America NO!",
-      "price": "4000",
-      "cost": "2000"
+      "description": "Budak pendek gede Milik",
+      "price": "7000",
+      "cost": "3000"
 }
 
 ### Get Menu by ID
-GET {{baseUrl}}/api/menu/items/1951954e-d97d-4d1f-95ff-65afc4a3b6ea
+GET {{baseUrl}}/api/menu/items/f2e4a084-2c2f-4bfd-b8fa-5f641d4f1390
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 ### Update Menu
-PUT {{baseUrl}}/api/menu/items/1951954e-d97d-4d1f-95ff-65afc4a3b6ea
+PUT {{baseUrl}}/api/menu/items/f2e4a084-2c2f-4bfd-b8fa-5f641d4f1390
 Content-Type: {{contentType}}
 Authorization: Bearer {{login.response.body.$.data.token}}
 
 {
-  "name": "Peyeum",
-  "description": "Peyeum bandung"
+  "name": "Tahu Sumedang",
+  "description": "Tahu nu pang raosna"
 }
 
 ### Delete Menu

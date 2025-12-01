@@ -43,6 +43,18 @@ func (s *MenuService) CreateCategory(categoryData *models.CategoryCreate) (*type
 		return nil, fmt.Errorf("failed to create category: %v", err)
 	}
 
+	// Invalidate cached category lists to ensure the new category appears immediately
+	ctx := context.Background()
+	// Delete all cached ListCategories results (all combinations of active/limit/offset)
+	categoryListKeys, err := s.cache.Keys(ctx, "categories:*")
+	if err == nil {
+		for _, key := range categoryListKeys {
+			s.cache.Delete(ctx, key)
+		}
+	} else {
+		fmt.Printf("Warning: Failed to get category list cache keys: %v\n", err)
+	}
+
 	return &types.APIResponse{
 		Success: true,
 		Data:    createdCategory,
@@ -51,9 +63,32 @@ func (s *MenuService) CreateCategory(categoryData *models.CategoryCreate) (*type
 
 // GetCategory retrieves a category by ID
 func (s *MenuService) GetCategory(id string) (*types.APIResponse, error) {
-	category, err := s.menuRepo.GetCategory(id)
+	// Create cache key
+	cacheKey := fmt.Sprintf("category:%s", id)
+
+	// Try to get from cache first
+	var category *models.Category
+	ctx := context.Background()
+	err := s.cache.GetJSON(ctx, cacheKey, &category)
+	if err == nil {
+		// Cache hit - return cached data
+		return &types.APIResponse{
+			Success: true,
+			Data:    category,
+		}, nil
+	}
+
+	// Cache miss - get from database
+	category, err = s.menuRepo.GetCategory(id)
 	if err != nil {
 		return nil, err
+	}
+
+	// Cache the result for 15 minutes
+	cacheErr := s.cache.SetJSON(ctx, cacheKey, category, 15*time.Minute)
+	if cacheErr != nil {
+		// Log the error but don't fail the request
+		fmt.Printf("Warning: Failed to cache category: %v\n", cacheErr)
 	}
 
 	return &types.APIResponse{
@@ -121,6 +156,34 @@ func (s *MenuService) UpdateCategory(id string, updateData *models.CategoryUpdat
 		return nil, fmt.Errorf("failed to update category: %v", err)
 	}
 
+	// Invalidate cached category lists to ensure consistency
+	ctx := context.Background()
+
+	// Delete cached individual category
+	s.cache.Delete(ctx, fmt.Sprintf("category:%s", id))
+
+	// Delete all cached ListCategories results (all combinations of active/limit/offset)
+	categoryListKeys, err := s.cache.Keys(ctx, "categories:*")
+	if err == nil {
+		for _, key := range categoryListKeys {
+			s.cache.Delete(ctx, key)
+		}
+	} else {
+		fmt.Printf("Warning: Failed to get category list cache keys: %v\n", err)
+	}
+
+	// If name changed, also invalidate menu items by category
+	if updateData.Name != nil {
+		menuItemsByCategoryKeys, err := s.cache.Keys(ctx, fmt.Sprintf("menu_items:category:%s:*", id))
+		if err == nil {
+			for _, key := range menuItemsByCategoryKeys {
+				s.cache.Delete(ctx, key)
+			}
+		} else {
+			fmt.Printf("Warning: Failed to get menu items by category cache keys: %v\n", err)
+		}
+	}
+
 	return &types.APIResponse{
 		Success: true,
 		Data:    updatedCategory,
@@ -132,6 +195,32 @@ func (s *MenuService) DeleteCategory(id string) (*types.APIResponse, error) {
 	err := s.menuRepo.DeleteCategory(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete category: %v", err)
+	}
+
+	// Invalidate cached category lists to ensure consistency
+	ctx := context.Background()
+
+	// Delete cached individual category
+	s.cache.Delete(ctx, fmt.Sprintf("category:%s", id))
+
+	// Delete all cached ListCategories results (all combinations of active/limit/offset)
+	categoryListKeys, err := s.cache.Keys(ctx, "categories:*")
+	if err == nil {
+		for _, key := range categoryListKeys {
+			s.cache.Delete(ctx, key)
+		}
+	} else {
+		fmt.Printf("Warning: Failed to get category list cache keys: %v\n", err)
+	}
+
+	// Also invalidate menu items by this category
+	menuItemsByCategoryKeys, err := s.cache.Keys(ctx, fmt.Sprintf("menu_items:category:%s:*", id))
+	if err == nil {
+		for _, key := range menuItemsByCategoryKeys {
+			s.cache.Delete(ctx, key)
+		}
+	} else {
+		fmt.Printf("Warning: Failed to get menu items by category cache keys: %v\n", err)
 	}
 
 	return &types.APIResponse{
@@ -170,6 +259,29 @@ func (s *MenuService) CreateMenuItem(itemData *models.MenuItemCreate) (*types.AP
 		fmt.Printf("Warning: Failed to create inventory record for item %s: %v\n", createdItem.ID, err)
 	}
 
+	// Invalidate cached menu item lists to ensure the new item appears immediately
+	ctx := context.Background()
+
+	// Delete all cached ListMenuItems results (all combinations of available/limit/offset)
+	menuItemListKeys, err := s.cache.Keys(ctx, "menu_items:*")
+	if err == nil {
+		for _, key := range menuItemListKeys {
+			s.cache.Delete(ctx, key)
+		}
+	} else {
+		fmt.Printf("Warning: Failed to get menu item list cache keys: %v\n", err)
+	}
+
+	// Also invalidate the specific category's cached list
+	menuItemsByCategoryKeys, err := s.cache.Keys(ctx, fmt.Sprintf("menu_items:category:%s:*", itemData.CategoryID))
+	if err == nil {
+		for _, key := range menuItemsByCategoryKeys {
+			s.cache.Delete(ctx, key)
+		}
+	} else {
+		fmt.Printf("Warning: Failed to get menu items by category cache keys: %v\n", err)
+	}
+
 	return &types.APIResponse{
 		Success: true,
 		Data:    createdItem,
@@ -178,9 +290,32 @@ func (s *MenuService) CreateMenuItem(itemData *models.MenuItemCreate) (*types.AP
 
 // GetMenuItem retrieves a menu item by ID
 func (s *MenuService) GetMenuItem(id string) (*types.APIResponse, error) {
-	item, err := s.menuRepo.GetMenuItem(id)
+	// Create cache key
+	cacheKey := fmt.Sprintf("menu_item:%s", id)
+
+	// Try to get from cache first
+	var item *models.MenuItem
+	ctx := context.Background()
+	err := s.cache.GetJSON(ctx, cacheKey, &item)
+	if err == nil {
+		// Cache hit - return cached data
+		return &types.APIResponse{
+			Success: true,
+			Data:    item,
+		}, nil
+	}
+
+	// Cache miss - get from database
+	item, err = s.menuRepo.GetMenuItem(id)
 	if err != nil {
 		return nil, err
+	}
+
+	// Cache the result for 15 minutes
+	cacheErr := s.cache.SetJSON(ctx, cacheKey, item, 15*time.Minute)
+	if cacheErr != nil {
+		// Log the error but don't fail the request
+		fmt.Printf("Warning: Failed to cache menu item: %v\n", cacheErr)
 	}
 
 	return &types.APIResponse{
@@ -273,6 +408,9 @@ func (s *MenuService) UpdateMenuItem(id string, updateData *models.MenuItemUpdat
 		return nil, errors.New("menu item not found")
 	}
 
+	// Store original category ID to invalidate old category cache if needed
+	originalCategoryID := item.CategoryID
+
 	// Update fields if provided in updateData
 	if updateData.Name != nil {
 		item.Name = *updateData.Name
@@ -302,6 +440,48 @@ func (s *MenuService) UpdateMenuItem(id string, updateData *models.MenuItemUpdat
 		return nil, fmt.Errorf("failed to update menu item: %v", err)
 	}
 
+	// Invalidate cached menu item lists to ensure consistency
+	ctx := context.Background()
+
+	// Delete cached individual menu item
+	s.cache.Delete(ctx, fmt.Sprintf("menu_item:%s", id))
+
+	// Delete all cached ListMenuItems results (all combinations of available/limit/offset)
+	menuItemListKeys, err := s.cache.Keys(ctx, "menu_items:*")
+	if err == nil {
+		for _, key := range menuItemListKeys {
+			s.cache.Delete(ctx, key)
+		}
+	} else {
+		fmt.Printf("Warning: Failed to get menu item list cache keys: %v\n", err)
+	}
+
+	// Invalidate the old category's cached results if category changed
+	if updateData.CategoryID != nil && *updateData.CategoryID != originalCategoryID {
+		menuItemsByOldCategoryKeys, err := s.cache.Keys(ctx, fmt.Sprintf("menu_items:category:%s:*", originalCategoryID))
+		if err == nil {
+			for _, key := range menuItemsByOldCategoryKeys {
+				s.cache.Delete(ctx, key)
+			}
+		} else {
+			fmt.Printf("Warning: Failed to get menu items by old category cache keys: %v\n", err)
+		}
+	}
+
+	// Invalidate the new category's cached results if category changed or same category
+	newCategoryID := originalCategoryID
+	if updateData.CategoryID != nil {
+		newCategoryID = *updateData.CategoryID
+	}
+	menuItemsByNewCategoryKeys, err := s.cache.Keys(ctx, fmt.Sprintf("menu_items:category:%s:*", newCategoryID))
+	if err == nil {
+		for _, key := range menuItemsByNewCategoryKeys {
+			s.cache.Delete(ctx, key)
+		}
+	} else {
+		fmt.Printf("Warning: Failed to get menu items by new category cache keys: %v\n", err)
+	}
+
 	return &types.APIResponse{
 		Success: true,
 		Data:    updatedItem,
@@ -310,9 +490,41 @@ func (s *MenuService) UpdateMenuItem(id string, updateData *models.MenuItemUpdat
 
 // DeleteMenuItem deletes (deactivates) a menu item
 func (s *MenuService) DeleteMenuItem(id string) (*types.APIResponse, error) {
-	err := s.menuRepo.DeleteMenuItem(id)
+	// First get the menu item to access its category ID for cache invalidation
+	item, err := s.menuRepo.GetMenuItem(id)
+	if err != nil {
+		return nil, fmt.Errorf("menu item not found: %v", err)
+	}
+
+	err = s.menuRepo.DeleteMenuItem(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete menu item: %v", err)
+	}
+
+	// Invalidate cached menu item lists to ensure consistency
+	ctx := context.Background()
+
+	// Delete cached individual menu item
+	s.cache.Delete(ctx, fmt.Sprintf("menu_item:%s", id))
+
+	// Delete all cached ListMenuItems results (all combinations of available/limit/offset)
+	menuItemListKeys, err := s.cache.Keys(ctx, "menu_items:*")
+	if err == nil {
+		for _, key := range menuItemListKeys {
+			s.cache.Delete(ctx, key)
+		}
+	} else {
+		fmt.Printf("Warning: Failed to get menu item list cache keys: %v\n", err)
+	}
+
+	// Invalidate the category's cached results that this item belonged to
+	menuItemsByCategoryKeys, err := s.cache.Keys(ctx, fmt.Sprintf("menu_items:category:%s:*", item.CategoryID))
+	if err == nil {
+		for _, key := range menuItemsByCategoryKeys {
+			s.cache.Delete(ctx, key)
+		}
+	} else {
+		fmt.Printf("Warning: Failed to get menu items by category cache keys: %v\n", err)
 	}
 
 	return &types.APIResponse{

@@ -55,7 +55,7 @@ func TestOrderServiceWithOrderItemRepo(t *testing.T) {
 	mockStockTransactionRepo := new(MockStockTransactionRepo)
 
 	// Create service with the mocked repositories
-	orderService := NewOrderService(mockOrderRepo, mockOrderItemRepo, mockMenuRepo, mockInventoryRepo, mockStockTransactionRepo)
+	orderService := NewOrderService(mockOrderRepo, mockOrderItemRepo, mockMenuRepo, mockInventoryRepo, mockStockTransactionRepo, nil)
 
 	userID := "test-user-id"
 	orderID := "test-order-id"

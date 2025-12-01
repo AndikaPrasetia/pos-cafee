@@ -1,10 +1,12 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/AndikaPrasetia/pos-cafee/internal/cache"
 	"github.com/AndikaPrasetia/pos-cafee/internal/models"
 	"github.com/AndikaPrasetia/pos-cafee/internal/repositories"
 	"github.com/AndikaPrasetia/pos-cafee/pkg/types"
@@ -14,11 +16,12 @@ import (
 
 // OrderService handles order-related business logic
 type OrderService struct {
-	orderRepo           repositories.OrderRepo
-	orderItemRepo       repositories.OrderItemRepo
-	menuRepo            repositories.MenuRepo
-	inventoryRepo       repositories.InventoryRepo
+	orderRepo            repositories.OrderRepo
+	orderItemRepo        repositories.OrderItemRepo
+	menuRepo             repositories.MenuRepo
+	inventoryRepo        repositories.InventoryRepo
 	stockTransactionRepo repositories.StockTransactionRepo
+	cache                cache.Cache
 }
 
 // NewOrderService creates a new order service
@@ -28,6 +31,7 @@ func NewOrderService(
 	menuRepo repositories.MenuRepo,
 	inventoryRepo repositories.InventoryRepo,
 	stockTransactionRepo repositories.StockTransactionRepo,
+	cache cache.Cache,
 ) *OrderService {
 	return &OrderService{
 		orderRepo:            orderRepo,
@@ -35,6 +39,7 @@ func NewOrderService(
 		menuRepo:             menuRepo,
 		inventoryRepo:        inventoryRepo,
 		stockTransactionRepo: stockTransactionRepo,
+		cache:                cache,
 	}
 }
 
@@ -468,6 +473,39 @@ func (s *OrderService) CompleteOrder(orderID string, userID string, updateData *
 		return nil, fmt.Errorf("failed to fetch updated order: %v", err)
 	}
 
+	// If the order was completed before cancellation, we should invalidate report caches
+	// as the sales data will need to be recalculated
+	if order.Status == types.OrderStatusCompleted {
+		// Invalidate report caches since sales data has changed
+		ctx := context.Background()
+
+		// Delete daily sales report cache for the current date
+		today := time.Now().Format("2006-01-02")
+		s.cache.Delete(ctx, fmt.Sprintf("daily_sales_report:%s", today))
+
+		// Delete any cached reports that might be affected
+		// This would include any cached reports for today or the recent period
+		// Using pattern matching to invalidate all daily sales reports
+		dailySalesReportKeys, err := s.cache.Keys(ctx, "daily_sales_report:*")
+		if err == nil {
+			for _, key := range dailySalesReportKeys {
+				s.cache.Delete(ctx, key)
+			}
+		} else {
+			fmt.Printf("Warning: Failed to get daily sales report cache keys: %v\n", err)
+		}
+
+		// Invalidate top selling items reports
+		topSellingReportKeys, err := s.cache.Keys(ctx, "top_selling_items:*")
+		if err == nil {
+			for _, key := range topSellingReportKeys {
+				s.cache.Delete(ctx, key)
+			}
+		} else {
+			fmt.Printf("Warning: Failed to get top selling items report cache keys: %v\n", err)
+		}
+	}
+
 	return &types.APIResponse{
 		Success: true,
 		Data:    updatedOrder,
@@ -516,6 +554,39 @@ func (s *OrderService) CancelOrder(orderID string, userID string, updateData *mo
 	updatedOrder, err := s.orderRepo.GetOrder(orderID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch updated order: %v", err)
+	}
+
+	// If the order was completed before cancellation, we should invalidate report caches
+	// as the sales data will need to be recalculated
+	if order.Status == types.OrderStatusCompleted {
+		// Invalidate report caches since sales data has changed
+		ctx := context.Background()
+
+		// Delete daily sales report cache for the current date
+		today := time.Now().Format("2006-01-02")
+		s.cache.Delete(ctx, fmt.Sprintf("daily_sales_report:%s", today))
+
+		// Delete any cached reports that might be affected
+		// This would include any cached reports for today or the recent period
+		// Using pattern matching to invalidate all daily sales reports
+		dailySalesReportKeys, err := s.cache.Keys(ctx, "daily_sales_report:*")
+		if err == nil {
+			for _, key := range dailySalesReportKeys {
+				s.cache.Delete(ctx, key)
+			}
+		} else {
+			fmt.Printf("Warning: Failed to get daily sales report cache keys: %v\n", err)
+		}
+
+		// Invalidate top selling items reports
+		topSellingReportKeys, err := s.cache.Keys(ctx, "top_selling_items:*")
+		if err == nil {
+			for _, key := range topSellingReportKeys {
+				s.cache.Delete(ctx, key)
+			}
+		} else {
+			fmt.Printf("Warning: Failed to get top selling items report cache keys: %v\n", err)
+		}
 	}
 
 	return &types.APIResponse{
