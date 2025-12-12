@@ -22,7 +22,7 @@ A comprehensive Point of Sale (POS) system designed specifically for cafe busine
   - sqlc for type-safe SQL queries
   - Golang Migrate for database migrations
 - **Authentication**: JWT-based authentication
-- **Logging**: Logrus
+- **Logging**: Structured logging with Logrus, supporting both development (text) and production (JSON) formats with audit logging for sensitive operations
 - **Configuration**: Viper
 - **Validation**: Go Playground Validator
 - **Monetary Calculations**: Shopspring Decimal

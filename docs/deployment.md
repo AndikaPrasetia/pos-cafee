@@ -29,6 +29,23 @@ JWT_EXPIRY=24h
 LOG_LEVEL=info
 ```
 
+## Logging Configuration
+
+The application provides structured logging with different formats based on the environment:
+
+- **Development (`APP_ENV=development`)**: Uses text formatting with colors for improved readability
+- **Production (`APP_ENV=production`)**: Uses JSON formatting for better integration with log aggregation systems
+
+Supported log levels (controlled by `LOG_LEVEL` environment variable):
+- `debug`: Detailed information for debugging purposes
+- `info`: General information about application flow
+- `warn`: Warning about potential issues
+- `error`: Error events that don't prevent application flow
+- `fatal`: Critical errors that cause application termination
+- `panic`: Errors that cause panic
+
+The system also includes audit logging for sensitive operations like user logins, data modifications, and financial operations.
+
 ## Database Setup
 
 ### Running Migrations

@@ -16,11 +16,18 @@ import (
 )
 
 func main() {
-	// Initialize logger
-	utils.InitLogger()
-
-	// Load configuration
+	// Load configuration first to get environment info
 	cfg := config.LoadConfig()
+
+	// Initialize logger with environment and log level from config
+	utils.InitLogger(cfg.Environment, cfg.LogLevel)
+
+	// Log application startup
+	utils.LogInfo("Starting POS Cafe server", map[string]any{
+		"environment": cfg.Environment,
+		"port":        cfg.Port,
+		"version":     "3.0.0",
+	})
 
 	// Set Gin mode based on environment
 	if cfg.Environment == "production" {

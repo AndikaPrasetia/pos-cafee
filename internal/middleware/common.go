@@ -1,10 +1,14 @@
 package middleware
 
 import (
+	"bytes"
+	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/AndikaPrasetia/pos-cafee/pkg/types"
+	"github.com/AndikaPrasetia/pos-cafee/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -71,27 +75,68 @@ func ErrorMiddleware() gin.HandlerFunc {
 // RequestLoggingMiddleware logs incoming requests
 func RequestLoggingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Start timer to measure request duration
+		start := time.Now()
+
+		// Read request body if needed (be careful with this in production for performance)
+		var bodyBytes []byte
+		if c.Request.Body != nil {
+			bodyBytes, _ = io.ReadAll(c.Request.Body)
+			// Restore the io.ReadCloser to its original state
+			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		}
+
 		// Log the request
-		logRequest(c)
+		logRequest(c, bodyBytes)
 
 		// Process the request
 		c.Next()
 
+		// Calculate duration
+		duration := time.Since(start)
+
 		// Log the response
-		logResponse(c)
+		logResponse(c, duration)
 	}
 }
 
 // logRequest logs the incoming request details
-func logRequest(c *gin.Context) {
-	// In a real implementation, you would log to a file or structured logger
-	// This is a placeholder implementation
+func logRequest(c *gin.Context, body []byte) {
+	utils.LogInfo("Incoming request", map[string]any{
+		"method":      c.Request.Method,
+		"uri":         c.Request.RequestURI,
+		"remote_addr": c.ClientIP(),
+		"user_agent":  c.Request.UserAgent(),
+		"body":        string(body),
+		"timestamp":   time.Now().Format(time.RFC3339),
+		"request_id":  generateRequestID(), // You can implement request ID generation if needed
+	})
 }
 
 // logResponse logs the response details
-func logResponse(c *gin.Context) {
-	// In a real implementation, you would log to a file or structured logger
-	// This is a placeholder implementation
+func logResponse(c *gin.Context, duration time.Duration) {
+	// Get response size from context or headers
+	responseSize := c.Writer.Size()
+	if responseSize < 0 {
+		responseSize = 0
+	}
+
+	utils.LogInfo("Request completed", map[string]any{
+		"method":         c.Request.Method,
+		"uri":            c.Request.RequestURI,
+		"status":         c.Writer.Status(),
+		"response_size":  responseSize,
+		"duration_ms":    duration.Milliseconds(),
+		"duration":       duration.String(),
+		"remote_addr":    c.ClientIP(),
+		"timestamp":      time.Now().Format(time.RFC3339),
+		"request_id":     generateRequestID(),
+	})
+}
+
+// generateRequestID generates a unique request ID
+func generateRequestID() string {
+	return utils.GenerateUUID()
 }
 
 // RateLimitMiddleware provides basic rate limiting

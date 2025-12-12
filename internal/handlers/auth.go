@@ -6,6 +6,7 @@ import (
 	"github.com/AndikaPrasetia/pos-cafee/internal/models"
 	"github.com/AndikaPrasetia/pos-cafee/internal/services"
 	"github.com/AndikaPrasetia/pos-cafee/pkg/types"
+	"github.com/AndikaPrasetia/pos-cafee/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -14,16 +15,18 @@ import (
 type AuthHandler struct {
 	authService *services.AuthService
 	validate    *validator.Validate
+	auditLogger *utils.AuditLogger
 }
 
 // NewAuthHandler creates a new authentication handler
 func NewAuthHandler(authService *services.AuthService) *AuthHandler {
 	validate := validator.New()
 	types.RegisterValidatorRegistrations(validate)
-	
+
 	return &AuthHandler{
 		authService: authService,
 		validate:    validate,
+		auditLogger: utils.NewAuditLogger(),
 	}
 }
 
@@ -42,8 +45,36 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	result, err := h.authService.Login(&loginData)
 	if err != nil {
+		// Log failed login attempt
+		h.auditLogger.LogUserLogin(
+			c,
+			"", // userID unknown at this point
+			loginData.Username,
+			c.ClientIP(),
+			c.Request.UserAgent(),
+			false, // success = false
+		)
+
 		c.JSON(http.StatusUnauthorized, types.APIResponseWithError(err.Error()))
 		return
+	}
+
+	// Log successful login
+	userData, ok := result.Data.(map[string]interface{})
+	if ok {
+		user, ok := userData["user"].(map[string]interface{})
+		if ok {
+			userID, _ := user["id"].(string)
+			username, _ := user["username"].(string)
+			h.auditLogger.LogUserLogin(
+				c,
+				userID,
+				username,
+				c.ClientIP(),
+				c.Request.UserAgent(),
+				true, // success = true
+			)
+		}
 	}
 
 	c.JSON(http.StatusOK, result)
@@ -120,6 +151,19 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 func (h *AuthHandler) Logout(c *gin.Context) {
 	// In a stateless JWT system, the server doesn't store session state
 	// The client is responsible for discarding the token
-	
+
+	// Log the logout event
+	userID, exists := c.Get("user_id")
+	username, usernameExists := c.Get("username")
+
+	if exists && usernameExists {
+		h.auditLogger.LogUserLogout(
+			c,
+			userID.(string),
+			username.(string),
+			c.ClientIP(),
+		)
+	}
+
 	c.JSON(http.StatusOK, types.APIResponseWithMessage("Successfully logged out"))
 }
