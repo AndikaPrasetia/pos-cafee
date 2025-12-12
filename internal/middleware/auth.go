@@ -56,8 +56,9 @@ func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 			return
 		}
 
-		// Set user ID and role in the context for use in handlers
+		// Set user ID, username and role in the context for use in handlers
 		c.Set("user_id", claims.UserID)
+		c.Set("username", claims.Username)
 		c.Set("user_role", claims.Role)
 
 		// Continue with the request
@@ -132,8 +133,9 @@ func RoleAuthMiddleware(jwtSecret string, requiredRole string) gin.HandlerFunc {
 			}
 		}
 
-		// Set user ID and role in the context
+		// Set user ID, username and role in the context
 		c.Set("user_id", claims.UserID)
+		c.Set("username", claims.Username)
 		c.Set("user_role", claims.Role)
 
 		// Continue with the request

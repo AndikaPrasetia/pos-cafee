@@ -42,7 +42,7 @@ func (s *AuthService) Login(loginData *models.UserLogin) (*types.APIResponse, er
 		return nil, errors.New("invalid credentials")
 	}
 
-	token, err := utils.GenerateJWT(user.ID, string(user.Role), s.jwtSecret, s.jwtExpiry)
+	token, err := utils.GenerateJWT(user.ID, user.Username, string(user.Role), s.jwtSecret, s.jwtExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate token: %v", err)
 	}
@@ -108,7 +108,7 @@ func (s *AuthService) Register(registerData *models.UserRegister) (*types.APIRes
 		return nil, fmt.Errorf("failed to create user: %v", err)
 	}
 
-	token, err := utils.GenerateJWT(createdUser.ID, string(createdUser.Role), s.jwtSecret, s.jwtExpiry)
+	token, err := utils.GenerateJWT(createdUser.ID, createdUser.Username, string(createdUser.Role), s.jwtSecret, s.jwtExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate token: %v", err)
 	}
