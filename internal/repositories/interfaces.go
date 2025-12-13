@@ -20,6 +20,8 @@ type UserRepo interface {
 	UpdateUser(user *models.User) (*models.User, error)
 	UpdateUserPassword(userID, hashedPassword string) error
 	UpdateUserStatus(userID string, isActive bool) error
+	ListUsers(limit, offset int) ([]*models.User, error)
+	CountUsers() (int, error)
 }
 
 // MenuRepo defines the interface for menu-related database operations

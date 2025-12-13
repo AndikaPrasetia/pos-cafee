@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
@@ -16,17 +17,45 @@ func ConnectDB(config *AppConfig) *sql.DB {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Test the connection
-	if err := db.Ping(); err != nil {
-		log.Fatal("Failed to ping database:", err)
-	}
-
 	// Set connection pool settings
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(25)
 
-	log.Println("Successfully connected to database")
+	// Set connection timeouts (helpful for Docker networking)
+	db.SetConnMaxLifetime(5 * time.Minute) // Maximum amount of time a connection may be reused
+	db.SetConnMaxIdleTime(1 * time.Minute) // Maximum amount of time a connection may be idle
+	db.SetMaxIdleConns(25)                 // Keep more idle connections available
+
+	// Test the connection with retry logic
+	if err := testDatabaseConnection(db); err != nil {
+		log.Fatal("Failed to ping database after retries:", err)
+	} else {
+		log.Println("Successfully connected to database")
+	}
+
 	return db
+}
+
+// testDatabaseConnection tests the database connection with retry logic
+func testDatabaseConnection(db *sql.DB) error {
+	maxRetries := 5
+	retryDelay := 3 * time.Second
+
+	var err error
+	for i := 0; i < maxRetries; i++ {
+		err = db.Ping()
+		if err == nil {
+			return nil
+		}
+
+		log.Printf("Database ping attempt %d failed: %v", i+1, err)
+		if i < maxRetries-1 {
+			log.Printf("Retrying in %v... (attempt %d/%d)", retryDelay, i+2, maxRetries)
+			time.Sleep(retryDelay)
+		}
+	}
+
+	return err
 }
 
 // CloseDB closes the database connection

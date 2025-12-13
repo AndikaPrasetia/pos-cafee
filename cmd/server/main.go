@@ -44,11 +44,24 @@ func main() {
 	// Initialize database connection
 	db := config.ConnectDB(cfg)
 
-	// Initialize Redis connection
-	rdb := config.RedisClient(cfg)
+	// Initialize Redis manager with automatic reconnection
+	redisManager, err := cache.NewRedisManager(cfg)
+	var cacheClient cache.Cache
 
-	// Initialize cache
-	cacheClient := cache.NewRedisCache(rdb)
+	if err != nil {
+		log.Printf("Warning: Failed to initialize Redis connection: %v", err)
+		log.Println("Using fallback cache only. The application will continue to run without Redis.")
+
+		// Initialize adaptive cache with a nil Redis manager (will use fallback only)
+		// We need to modify the NewAdaptiveCache function to handle nil RedisManager
+		cacheClient = cache.NewAdaptiveCache(nil)  // Will use fallback cache only initially
+	} else {
+		// Initialize adaptive cache with Redis and fallback
+		cacheClient = cache.NewAdaptiveCache(redisManager)
+
+		// Start Redis monitoring in the background
+		go redisManager.Monitor(context.Background())
+	}
 
 	// Initialize repositories
 	repo := repositories.NewRepository(db)
@@ -60,6 +73,11 @@ func main() {
 	inventoryService := services.NewInventoryService(repo.InventoryRepo, repo.StockTransactionRepo, repo.MenuRepo)
 	expenseService := services.NewExpenseService(repo.ExpenseRepo)
 	reportService := services.NewReportService(repo.OrderRepo, repo.MenuRepo, repo.InventoryRepo, repo.ExpenseRepo, repo.Queries, cacheClient)
+	userService := services.NewUserService(repo.UserRepo)
+
+	// Initialize cache warming service and warm cache in the background
+	cacheWarmingService := cache.NewCacheWarmingService(cacheClient, repo)
+	cacheWarmingService.WarmCacheInBackground()
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService)
@@ -68,6 +86,8 @@ func main() {
 	inventoryHandler := handlers.NewInventoryHandler(inventoryService)
 	expenseHandler := handlers.NewExpenseHandler(expenseService)
 	reportHandler := handlers.NewReportHandler(reportService)
+	userHandler := handlers.NewUserHandler(authService, userService)  // Note: userService is needed here
+	systemHandler := handlers.NewSystemHandler(redisManager)
 
 	// Initialize Gin router
 	router := gin.New()
@@ -170,6 +190,25 @@ func main() {
 		maintenance.POST("/backup", maintenanceHandler.DatabaseBackup)
 	}
 
+	// User management routes (admin only)
+	users := router.Group("/api/users")
+	users.Use(middleware.RoleAuthMiddleware(cfg.JWTSecret, "admin"))
+	{
+		users.GET("/", userHandler.ListUsers)
+		users.GET("/:id", userHandler.GetUser)
+		users.PUT("/:id", userHandler.UpdateUser)
+		users.PUT("/:id/deactivate", userHandler.DeactivateUser)
+		users.PUT("/:id/activate", userHandler.ActivateUser)
+	}
+
+	// System monitoring routes (admin only)
+	system := router.Group("/api/system")
+	system.Use(middleware.RoleAuthMiddleware(cfg.JWTSecret, "admin"))
+	{
+		system.GET("/redis/health", systemHandler.GetRedisHealth)
+		system.GET("/redis/metrics", systemHandler.GetRedisMetrics)
+	}
+
 	// Create HTTP server with timeout settings
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
@@ -210,9 +249,16 @@ func main() {
 		log.Printf("Error closing database: %v\n", err)
 	}
 
-	// close redis connection
-	if err := rdb.Close(); err != nil {
-		log.Printf("Error closing redis: %v\n", err)
+	// close adaptive cache if it supports closing
+	if closer, ok := cacheClient.(interface{ Close() }); ok {
+		closer.Close()
+	}
+
+	// close redis connection if Redis manager is available
+	if redisManager != nil {
+		if err := redisManager.GetClient().Close(); err != nil {
+			log.Printf("Error closing redis: %v\n", err)
+		}
 	}
 
 	fmt.Println("Server gracefully stopped 󱠡 ")

@@ -12,6 +12,7 @@ import (
 )
 
 type Querier interface {
+	CountUsers(ctx context.Context) (int64, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateExpense(ctx context.Context, arg CreateExpenseParams) (Expense, error)
 	CreateInventoryRecord(ctx context.Context, menuItemID uuid.UUID) error
@@ -49,6 +50,7 @@ type Querier interface {
 	ListMenuItemsByCategory(ctx context.Context, arg ListMenuItemsByCategoryParams) ([]MenuItem, error)
 	ListOrders(ctx context.Context, arg ListOrdersParams) ([]Order, error)
 	ListStockTransactions(ctx context.Context, arg ListStockTransactionsParams) ([]ListStockTransactionsRow, error)
+	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateExpense(ctx context.Context, arg UpdateExpenseParams) (Expense, error)
 	UpdateInventoryStock(ctx context.Context, arg UpdateInventoryStockParams) error

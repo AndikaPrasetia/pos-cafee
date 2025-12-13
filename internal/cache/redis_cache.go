@@ -5,60 +5,63 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	"github.com/go-redis/redis/v8"
 )
 
 // RedisCache implements the Cache interface using Redis
 type RedisCache struct {
-	client *redis.Client
+	manager *RedisManager
 }
 
 // NewRedisCache creates a new instance of RedisCache
-func NewRedisCache(client *redis.Client) *RedisCache {
+func NewRedisCache(manager *RedisManager) *RedisCache {
 	return &RedisCache{
-		client: client,
+		manager: manager,
 	}
 }
 
 // Get retrieves a value from cache
 func (r *RedisCache) Get(ctx context.Context, key string) (string, error) {
-	if r.client == nil {
+	client := r.manager.GetClient()
+	if client == nil {
 		return "", fmt.Errorf("redis client not initialized")
 	}
-	return r.client.Get(ctx, key).Result()
+	return client.Get(ctx, key).Result()
 }
 
 // Set sets a value in cache with expiration
 func (r *RedisCache) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
-	if r.client == nil {
+	client := r.manager.GetClient()
+	if client == nil {
 		return fmt.Errorf("redis client not initialized")
 	}
-	return r.client.Set(ctx, key, value, expiration).Err()
+	return client.Set(ctx, key, value, expiration).Err()
 }
 
 // SetNX sets a value in cache only if it doesn't already exist
 func (r *RedisCache) SetNX(ctx context.Context, key string, value interface{}, expiration time.Duration) (bool, error) {
-	if r.client == nil {
+	client := r.manager.GetClient()
+	if client == nil {
 		return false, fmt.Errorf("redis client not initialized")
 	}
-	return r.client.SetNX(ctx, key, value, expiration).Result()
+	return client.SetNX(ctx, key, value, expiration).Result()
 }
 
 // Delete removes a value from cache
 func (r *RedisCache) Delete(ctx context.Context, key string) error {
-	if r.client == nil {
+	client := r.manager.GetClient()
+	if client == nil {
 		return fmt.Errorf("redis client not initialized")
 	}
-	return r.client.Del(ctx, key).Err()
+	return client.Del(ctx, key).Err()
 }
 
 // Exists checks if a key exists in cache
 func (r *RedisCache) Exists(ctx context.Context, key string) (bool, error) {
-	if r.client == nil {
+	client := r.manager.GetClient()
+	if client == nil {
 		return false, fmt.Errorf("redis client not initialized")
 	}
-	count, err := r.client.Exists(ctx, key).Result()
+	count, err := client.Exists(ctx, key).Result()
 	if err != nil {
 		return false, err
 	}
@@ -67,23 +70,26 @@ func (r *RedisCache) Exists(ctx context.Context, key string) (bool, error) {
 
 // FlushDB clears all keys from the current database
 func (r *RedisCache) FlushDB(ctx context.Context) error {
-	if r.client == nil {
+	client := r.manager.GetClient()
+	if client == nil {
 		return fmt.Errorf("redis client not initialized")
 	}
-	return r.client.FlushDB(ctx).Err()
+	return client.FlushDB(ctx).Err()
 }
 
 // Keys retrieves all keys matching the pattern
 func (r *RedisCache) Keys(ctx context.Context, pattern string) ([]string, error) {
-	if r.client == nil {
+	client := r.manager.GetClient()
+	if client == nil {
 		return nil, fmt.Errorf("redis client not initialized")
 	}
-	return r.client.Keys(ctx, pattern).Result()
+	return client.Keys(ctx, pattern).Result()
 }
 
 // GetJSON retrieves a value from cache and unmarshals it to the provided struct
 func (r *RedisCache) GetJSON(ctx context.Context, key string, dest interface{}) error {
-	if r.client == nil {
+	client := r.manager.GetClient()
+	if client == nil {
 		return fmt.Errorf("redis client not initialized")
 	}
 	value, err := r.Get(ctx, key)
@@ -95,7 +101,8 @@ func (r *RedisCache) GetJSON(ctx context.Context, key string, dest interface{}) 
 
 // SetJSON sets a value in cache with expiration after marshaling to JSON
 func (r *RedisCache) SetJSON(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
-	if r.client == nil {
+	client := r.manager.GetClient()
+	if client == nil {
 		return fmt.Errorf("redis client not initialized")
 	}
 	jsonValue, err := json.Marshal(value)

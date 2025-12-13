@@ -22,6 +22,7 @@ type ReportService struct {
 	expenseRepo   repositories.ExpenseRepo
 	queries       *db.Queries
 	cache         cache.Cache
+	invalidation  *cache.CacheInvalidation
 }
 
 // NewReportService creates a new report service
@@ -31,7 +32,7 @@ func NewReportService(
 	inventoryRepo repositories.InventoryRepo,
 	expenseRepo repositories.ExpenseRepo,
 	queries *db.Queries,
-	cache cache.Cache,
+	cacheSvc cache.Cache,
 ) *ReportService {
 	return &ReportService{
 		orderRepo:     orderRepo,
@@ -39,7 +40,8 @@ func NewReportService(
 		inventoryRepo: inventoryRepo,
 		expenseRepo:   expenseRepo,
 		queries:       queries,
-		cache:         cache,
+		cache:         cacheSvc,
+		invalidation:  cache.NewCacheInvalidation(cacheSvc),
 	}
 }
 

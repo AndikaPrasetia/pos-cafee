@@ -1,12 +1,11 @@
-
 version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # image: andikaprasetia/pos-cafee-server:v3.4.0  # Uncomment this and comment 'build' section for production deployment
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    image: andikaprasetia/pos-cafee-server:v3.5.0  # Uncomment this and comment 'build' section when using pre-built image
     ports:
       - "8081:8080"
     environment:

@@ -177,3 +177,41 @@ func (r *userRepo) UpdateUserStatus(userID string, isActive bool) error {
 		IsActive: isActive,
 	})
 }
+
+// ListUsers retrieves a paginated list of users
+func (r *userRepo) ListUsers(limit, offset int) ([]*models.User, error) {
+	users, err := r.queries.ListUsers(context.Background(), db.ListUsersParams{
+		Limit:  int32(limit),
+		Offset: int32(offset),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*models.User
+	for _, user := range users {
+		result = append(result, &models.User{
+			ID:        user.ID.String(),
+			Username:  user.Username,
+			Email:     user.Email,
+			Role:      types.UserRole(user.Role),
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			IsActive:  user.IsActive,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		})
+	}
+
+	return result, nil
+}
+
+// CountUsers counts the total number of users
+func (r *userRepo) CountUsers() (int, error) {
+	count, err := r.queries.CountUsers(context.Background())
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
+}
