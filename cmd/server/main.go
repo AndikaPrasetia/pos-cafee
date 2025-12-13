@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/AndikaPrasetia/pos-cafee/internal/cache"
@@ -38,11 +43,9 @@ func main() {
 
 	// Initialize database connection
 	db := config.ConnectDB(cfg)
-	defer config.CloseDB(db)
 
 	// Initialize Redis connection
 	rdb := config.RedisClient(cfg)
-	defer config.CloseRedis(rdb)
 
 	// Initialize cache
 	cacheClient := cache.NewRedisCache(rdb)
@@ -176,9 +179,43 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// Start the server
+	// channel for signal interrupt
+	quit := make(chan os.Signal, 1)
+	// signal interrupted (Ctrl+C)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	// run server in goroutine
+	go func() {
 	log.Printf("Starting server on port %s in %s mode", cfg.Port, cfg.Environment)
-	log.Fatal(srv.ListenAndServe())
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			panic(fmt.Errorf("failed to start server: %v", err))
+		}
+	}()
+
+	// blocking main goroutine until signal recieved
+	<-quit
+	fmt.Println("\nShutting down server...")
+
+	// timeout 5 seconds for shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// shutdown server
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("Server forced to shutdown: %v\n", err)
+	}
+
+	// close db connection
+	if err := db.Close(); err != nil {
+		log.Printf("Error closing database: %v\n", err)
+	}
+
+	// close redis connection
+	if err := rdb.Close(); err != nil {
+		log.Printf("Error closing redis: %v\n", err)
+	}
+
+	fmt.Println("Server gracefully stopped 󱠡 ")
 }
 
 // parseDuration parses the duration string from config
