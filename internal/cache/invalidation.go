@@ -63,13 +63,13 @@ func (ci *CacheInvalidation) InvalidateListKeys(ctx context.Context, entityName 
 
 // InvalidateMenuRelatedKeys invalidates all cache keys related to menu operations
 func (ci *CacheInvalidation) InvalidateMenuRelatedKeys(ctx context.Context) {
-	// Invalidate all menu items cache
-	if err := ci.InvalidateListKeys(ctx, "menu_item"); err != nil {
+	// Invalidate all menu items cache (using the correct plural form)
+	if err := ci.InvalidateByPrefix(ctx, "menu_items:"); err != nil {
 		log.Printf("Warning: Failed to invalidate menu item cache: %v", err)
 	}
 
-	// Invalidate all category cache
-	if err := ci.InvalidateListKeys(ctx, "category"); err != nil {
+	// Invalidate all category cache (using the correct plural form)
+	if err := ci.InvalidateByPrefix(ctx, "categories:"); err != nil {
 		log.Printf("Warning: Failed to invalidate category cache: %v", err)
 	}
 }

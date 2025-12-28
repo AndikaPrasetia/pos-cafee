@@ -47,7 +47,7 @@ func (s *MenuService) CreateCategory(categoryData *models.CategoryCreate) (*type
 
 	// Invalidate cached category lists to ensure the new category appears immediately
 	ctx := context.Background()
-	s.invalidation.InvalidateListKeys(ctx, "category")
+	s.invalidation.InvalidateByPrefix(ctx, "categories:")
 
 	return &types.APIResponse{
 		Success: true,
@@ -157,7 +157,7 @@ func (s *MenuService) UpdateCategory(id string, updateData *models.CategoryUpdat
 	s.cache.Delete(ctx, fmt.Sprintf("category:%s", id))
 
 	// Delete all cached ListCategories results
-	s.invalidation.InvalidateListKeys(ctx, "category")
+	s.invalidation.InvalidateByPrefix(ctx, "categories:")
 
 	// If name changed, also invalidate menu items by category
 	if updateData.Name != nil {
@@ -184,7 +184,7 @@ func (s *MenuService) DeleteCategory(id string) (*types.APIResponse, error) {
 	s.cache.Delete(ctx, fmt.Sprintf("category:%s", id))
 
 	// Delete all cached ListCategories results
-	s.invalidation.InvalidateListKeys(ctx, "category")
+	s.invalidation.InvalidateByPrefix(ctx, "categories:")
 
 	// Also invalidate menu items by this category
 	s.invalidation.InvalidateByPrefix(ctx, fmt.Sprintf("menu_items:category:%s:", id))
@@ -227,7 +227,11 @@ func (s *MenuService) CreateMenuItem(itemData *models.MenuItemCreate) (*types.AP
 
 	// Invalidate cached menu item lists to ensure the new item appears immediately
 	ctx := context.Background()
-	s.invalidation.InvalidateListKeys(ctx, "menu_item")
+
+	// Invalidate all menu item list caches (using the correct plural form)
+	s.invalidation.InvalidateByPrefix(ctx, "menu_items:")
+
+	// Also invalidate the specific category's cached results
 	s.invalidation.InvalidateByPrefix(ctx, fmt.Sprintf("menu_items:category:%s:", itemData.CategoryID))
 
 	return &types.APIResponse{
@@ -394,8 +398,8 @@ func (s *MenuService) UpdateMenuItem(id string, updateData *models.MenuItemUpdat
 	// Delete cached individual menu item
 	s.cache.Delete(ctx, fmt.Sprintf("menu_item:%s", id))
 
-	// Delete all cached ListMenuItems results
-	s.invalidation.InvalidateListKeys(ctx, "menu_item")
+	// Delete all cached ListMenuItems results (using the correct plural form)
+	s.invalidation.InvalidateByPrefix(ctx, "menu_items:")
 
 	// Invalidate the old category's cached results if category changed
 	if updateData.CategoryID != nil && *updateData.CategoryID != originalCategoryID {
@@ -434,8 +438,8 @@ func (s *MenuService) DeleteMenuItem(id string) (*types.APIResponse, error) {
 	// Delete cached individual menu item
 	s.cache.Delete(ctx, fmt.Sprintf("menu_item:%s", id))
 
-	// Delete all cached ListMenuItems results
-	s.invalidation.InvalidateListKeys(ctx, "menu_item")
+	// Delete all cached ListMenuItems results (using the correct plural form)
+	s.invalidation.InvalidateByPrefix(ctx, "menu_items:")
 
 	// Invalidate the category's cached results that this item belonged to
 	s.invalidation.InvalidateByPrefix(ctx, fmt.Sprintf("menu_items:category:%s:", item.CategoryID))
