@@ -155,43 +155,25 @@ func (ac *AdaptiveCache) SetNX(ctx context.Context, key string, value interface{
 
 // Delete removes a value from cache
 func (ac *AdaptiveCache) Delete(ctx context.Context, key string) error {
-	ac.mutex.RLock()
-	usingFallback := ac.usingFallback
-	ac.mutex.RUnlock()
-
 	var primaryErr error
 	var fallbackErr error
 
-	// Try primary cache first if it's available and we're not using fallback
-	if !usingFallback && ac.redisCache != nil {
+	// Always delete from primary cache if available (regardless of fallback status)
+	if ac.redisCache != nil {
 		primaryErr = ac.redisCache.Delete(ctx, key)
 		if primaryErr != nil {
-			// Switch to fallback on error
-			log.Printf("Redis error during Delete, switching to fallback: %v", primaryErr)
-			ac.mutex.Lock()
-			ac.usingFallback = true
-			ac.mutex.Unlock()
-		} else {
-			// Also delete from fallback cache
-			ac.fallbackCache.Delete(ctx, key)
-			return nil // Success with primary cache
+			// Log the error but continue to delete from fallback
+			log.Printf("Redis error during Delete: %v", primaryErr)
 		}
-	} else {
-		// If using fallback or redisCache is nil, only delete from fallback
-		fallbackErr = ac.fallbackCache.Delete(ctx, key)
-		if fallbackErr != nil {
-			log.Printf("Fallback cache error during Delete: %v", fallbackErr)
-		}
-		return fallbackErr
 	}
 
-	// Delete from fallback cache
+	// Always delete from fallback cache as well to ensure complete deletion
 	fallbackErr = ac.fallbackCache.Delete(ctx, key)
 	if fallbackErr != nil {
 		log.Printf("Fallback cache error during Delete: %v", fallbackErr)
 	}
 
-	// Return the primary error if we were trying to use Redis
+	// Return the primary error if there was one (prioritizing Redis errors)
 	if primaryErr != nil {
 		return primaryErr
 	}
@@ -225,43 +207,24 @@ func (ac *AdaptiveCache) Exists(ctx context.Context, key string) (bool, error) {
 
 // FlushDB clears all keys from the current database
 func (ac *AdaptiveCache) FlushDB(ctx context.Context) error {
-	ac.mutex.RLock()
-	usingFallback := ac.usingFallback
-	ac.mutex.RUnlock()
-
 	var primaryErr error
 	var fallbackErr error
 
-	// Try primary cache first if it's available and we're not using fallback
-	if !usingFallback && ac.redisCache != nil {
+	// Always flush primary cache if available
+	if ac.redisCache != nil {
 		primaryErr = ac.redisCache.FlushDB(ctx)
 		if primaryErr != nil {
-			// Switch to fallback on error
-			log.Printf("Redis error during FlushDB, switching to fallback: %v", primaryErr)
-			ac.mutex.Lock()
-			ac.usingFallback = true
-			ac.mutex.Unlock()
-		} else {
-			// Also flush fallback cache
-			ac.fallbackCache.FlushDB(ctx)
-			return nil // Success with primary cache
+			log.Printf("Redis error during FlushDB: %v", primaryErr)
 		}
-	} else {
-		// If using fallback or redisCache is nil, only flush fallback
-		fallbackErr = ac.fallbackCache.FlushDB(ctx)
-		if fallbackErr != nil {
-			log.Printf("Fallback cache error during FlushDB: %v", fallbackErr)
-		}
-		return fallbackErr
 	}
 
-	// Flush fallback cache
+	// Always flush fallback cache as well to ensure complete flush
 	fallbackErr = ac.fallbackCache.FlushDB(ctx)
 	if fallbackErr != nil {
 		log.Printf("Fallback cache error during FlushDB: %v", fallbackErr)
 	}
 
-	// Return the primary error if we were trying to use Redis
+	// Return the primary error if there was one (prioritizing Redis errors)
 	if primaryErr != nil {
 		return primaryErr
 	}
@@ -270,27 +233,54 @@ func (ac *AdaptiveCache) FlushDB(ctx context.Context) error {
 }
 
 // Keys retrieves all keys matching the pattern
+// This implementation tries both caches to ensure comprehensive key retrieval
 func (ac *AdaptiveCache) Keys(ctx context.Context, pattern string) ([]string, error) {
 	ac.mutex.RLock()
 	usingFallback := ac.usingFallback
 	ac.mutex.RUnlock()
 
-	if usingFallback || ac.redisCache == nil {
-		return ac.fallbackCache.Keys(ctx, pattern)
+	var allKeys []string
+	var primaryErr error
+
+	// Try primary cache if available
+	if !usingFallback && ac.redisCache != nil {
+		keys, err := ac.redisCache.Keys(ctx, pattern)
+		if err != nil {
+			// Log the error but continue to try fallback
+			log.Printf("Redis error during Keys: %v", err)
+			primaryErr = err
+		} else {
+			allKeys = append(allKeys, keys...)
+		}
 	}
 
-	keys, err := ac.redisCache.Keys(ctx, pattern)
-	if err != nil {
-		// If Redis fails, try fallback cache
-		log.Printf("Redis error during Keys, trying fallback: %v", err)
-		ac.mutex.Lock()
-		ac.usingFallback = true
-		ac.mutex.Unlock()
-
-		return ac.fallbackCache.Keys(ctx, pattern)
+	// Always try fallback cache as well to ensure comprehensive results
+	fallbackKeys, fallbackErr := ac.fallbackCache.Keys(ctx, pattern)
+	if fallbackErr != nil {
+		log.Printf("Fallback cache error during Keys: %v", fallbackErr)
+	} else {
+		allKeys = append(allKeys, fallbackKeys...)
 	}
 
-	return keys, err
+	// If we have results from either cache, return them
+	if len(allKeys) > 0 {
+		// Remove duplicates
+		uniqueKeys := make([]string, 0, len(allKeys))
+		seen := make(map[string]bool)
+		for _, key := range allKeys {
+			if !seen[key] {
+				uniqueKeys = append(uniqueKeys, key)
+				seen[key] = true
+			}
+		}
+		return uniqueKeys, nil
+	}
+
+	// If no results from either cache, return the primary error if available
+	if primaryErr != nil {
+		return nil, primaryErr
+	}
+	return allKeys, fallbackErr
 }
 
 // GetJSON retrieves a value from cache and unmarshals it to the provided struct

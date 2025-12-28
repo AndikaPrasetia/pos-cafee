@@ -3,7 +3,7 @@
 # @version 1.0.0
 # @description POS app for a small cafe
 
-@baseUrl = http://localhost:8081
+@baseUrl = http://localhost:8080
 @contentType = application/json
 # @baseUrl = environmental-biddy-washoe-8812f0c5.koyeb.app
 
